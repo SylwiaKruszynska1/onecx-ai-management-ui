@@ -2,6 +2,7 @@ openapi: 3.0.3
 info:
   title: onecx-ai-management-bff
   version: '1.0'
+  description: Updated on 05.06.2025 at 08:41
 paths:
   /AIKnowledgeVectorDb/search:
     post:
@@ -153,8 +154,7 @@ paths:
       operationId: searchAIKnowledgeDocuments
       tags:
         - AIKnowledgeDocumentBffService
-      description: This operation performs a search based on provided search criteria.
-        Search for AIKnowledgeDocument results.
+      description: This operation performs a search based on provided search criteria. Search for AIKnowledgeDocument results.
       requestBody:
         content:
           application/json:
@@ -326,8 +326,7 @@ paths:
       operationId: searchAIProvider
       tags:
         - AIProviderBffService
-      description: This operation performs a search based on provided search criteria.
-        Search for AIProvider results.
+      description: This operation performs a search based on provided search criteria. Search for AIProvider results.
       requestBody:
         content:
           application/json:
@@ -715,8 +714,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetailResponse'
-
-
 components:
   schemas:
     AIKnowledgeVectorDb:
@@ -757,7 +754,6 @@ components:
           type: string
         vdbCollection:
           type: string
-        
     SearchAIKnowledgeVectorDbResponse:
       type: object
       required:
@@ -801,7 +797,6 @@ components:
           type: string
         message:
           type: string
-   
     GetAIKnowledgeVectorDbByIdResponse:
       type: object
       required:
@@ -827,7 +822,7 @@ components:
           type: string
         appId:
           type: string
-        aiContext:  
+        aiContext:
           type: object
           $ref: '#/components/schemas/AIContext'
     CreateAIKnowledgeVectorDbResponse:
@@ -1097,6 +1092,8 @@ components:
           type: string
         description:
           type: string
+        appId:
+          type: string
         aiContext:
           type: array
           items:
@@ -1270,10 +1267,12 @@ components:
           type: string
         creationUser:
           type: string
+        provider:
+            $ref: '#/components/schemas/AIProvider'
         AIKnowledgeBase:
-          $ref: '#/components/schemas/AIKnowledgeBase'
+            $ref: '#/components/schemas/AIKnowledgeBase'
         aIKnowledgeVectorDb:
-          $ref: '#/components/schemas/AIKnowledgeVectorDb'
+            $ref: '#/components/schemas/AIKnowledgeVectorDb'
         aIKnowledgeUrl:
           type: array
           items:
@@ -1286,8 +1285,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AIKnowledgeDocument'
-        provider:
-          $ref: '#/components/schemas/AIProvider'
+    CreateAIContextRequest:
+      type: object
+      properties:
+        dataObject:
+          $ref: '#/components/schemas/AIContext'
+    CreateAIContextResponse:
+      type: object
+      properties:
+        dataObject:
+          type: object
+          $ref: '#/components/schemas/AIContext'
     AIKnowledgeUrl:
       type: object
       properties:
@@ -1334,14 +1342,3 @@ components:
           type: array
           items:
             type: string
-    CreateAIContextRequest:
-      type: object
-      properties:
-        dataObject:
-          $ref: '#/components/schemas/AIContext'
-    CreateAIContextResponse:
-      type: object
-      properties:
-        dataObject:
-          type: object
-          $ref: '#/components/schemas/AIContext'

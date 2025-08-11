@@ -23,11 +23,11 @@ export interface AIContext {
     modificationCount?: number;
     modificationUser?: string;
     creationUser?: string;
+    provider?: AIProvider;
     AIKnowledgeBase?: AIKnowledgeBase;
     aIKnowledgeVectorDb?: AIKnowledgeVectorDb;
     aIKnowledgeUrl?: Array<AIKnowledgeUrl>;
     aIKnowledgeDbs?: Array<AIKnowledgeDatabase>;
     aIKnowledgeDocuments?: Array<AIKnowledgeDocument>;
-    provider?: AIProvider;
 }
 

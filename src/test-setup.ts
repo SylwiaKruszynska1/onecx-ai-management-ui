@@ -5,4 +5,14 @@ globalThis.ngJest = {
     errorOnUnknownProperties: true
   }
 }
+
+// Suppress CSS stylesheet parsing errors
+const originalConsoleError = console.error
+console.error = function (...data) {
+  if (typeof data[0]?.toString === 'function' && data[0].toString().includes('Error: Could not parse CSS stylesheet')) {
+    return
+  }
+  originalConsoleError(...data)
+}
+
 import 'jest-preset-angular/setup-jest'

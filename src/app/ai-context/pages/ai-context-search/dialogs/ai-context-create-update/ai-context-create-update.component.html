@@ -1,0 +1,49 @@
+<form [formGroup]="formGroup">
+  <div class="flex flex-wrap flex-column gap-4 justify-content-between mt-2">
+    <div [title]="'AI_CONTEXT_CREATE_UPDATE.FORM.APPID' | translate">
+      <span class="p-float-label" controlErrorAnchor>
+        <input
+          pInputText
+          type="text"
+          id="ai-context_detail_form_appId"
+          class="w-full pt-3 pb-2"
+          formControlName="appId"
+          [attr.aria-label]="'AI_CONTEXT_CREATE_UPDATE.FORM.APPID' | translate"
+        />
+        <label class="ocx-required-label" for="ai-context_detail_form_appId">
+          {{ 'AI_CONTEXT_CREATE_UPDATE.FORM.APPID' | translate }}</label
+        >
+      </span>
+    </div>
+    <div [title]="'AI_CONTEXT_CREATE_UPDATE.FORM.NAME' | translate">
+      <span class="p-float-label" controlErrorAnchor>
+        <input
+          pInputText
+          type="text"
+          id="ai-context_detail_form_name"
+          class="w-full pt-3 pb-2"
+          formControlName="name"
+          [attr.aria-label]="'AI_CONTEXT_CREATE_UPDATE.FORM.NAME' | translate"
+        />
+        <label class="ocx-required-label" for="ai-context_detail_form_name">
+          {{ 'AI_CONTEXT_CREATE_UPDATE.FORM.NAME' | translate }}</label
+        >
+      </span>
+    </div>
+    <div [title]="'AI_CONTEXT_CREATE_UPDATE.FORM.DESCRIPTION' | translate">
+      <span class="p-float-label" controlErrorAnchor>
+        <input
+          pInputText
+          type="text"
+          id="ai-context_detail_form_description"
+          class="w-full pt-3 pb-2"
+          formControlName="description"
+          [attr.aria-label]="'AI_CONTEXT_CREATE_UPDATE.FORM.DESCRIPTION' | translate"
+        />
+        <label class="ocx-required-label" for="ai-context_detail_form_description">
+          {{ 'AI_CONTEXT_CREATE_UPDATE.FORM.DESCRIPTION' | translate }}</label
+        >
+      </span>
+    </div>
+  </div>
+</form>

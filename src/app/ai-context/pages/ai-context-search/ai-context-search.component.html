@@ -1,0 +1,107 @@
+<ocx-portal-page
+  permission="AI_CONTEXT#SEARCH"
+  [helpArticleId]="'AI_CONTEXT_SEARCH.HELP_ARTICLE_ID' | translate"
+  *ngrxLet="viewModel$; let vm"
+>
+  <ocx-search-header
+    [headline]="'AI_CONTEXT_SEARCH.HEADER' | translate"
+    [subheader]="'AI_CONTEXT_SEARCH.SUB_HEADER' | translate"
+    (searched)="search(aiContextSearchFormGroup)"
+    (resetted)="resetSearch()"
+    [manualBreadcrumbs]="true"
+    [actions]="(headerActions$ | async) ?? []"
+    (componentStateChanged)="searchHeaderComponentStateChanged($event)"
+    [viewMode]="vm.searchHeaderComponentState?.activeViewMode ?? 'basic'"
+  >
+    <form [formGroup]="aiContextSearchFormGroup">
+      <div class="grid mt-0 p-fluid">
+        <div class="col-12 md:col-3">
+          <span class="p-float-label">
+            <input
+              id="appId"
+              pInputText
+              type="text"
+              formControlName="appId"
+              class="p-inputtext p-component"
+              [ngModel]="vm.searchCriteria.appId"
+            />
+            <label for="appId">{{ 'AI_CONTEXT_SEARCH.INPUT_FIELDS.APPID' | translate }}</label>
+          </span>
+        </div>
+        <div class="col-12 md:col-3">
+          <span class="p-float-label">
+            <input
+              id="name"
+              pInputText
+              type="text"
+              formControlName="name"
+              class="p-inputtext p-component"
+              [ngModel]="vm.searchCriteria.name"
+            />
+            <label for="name">{{ 'AI_CONTEXT_SEARCH.INPUT_FIELDS.NAME' | translate }}</label>
+          </span>
+        </div>
+        <div class="col-12 md:col-3">
+          <span class="p-float-label">
+            <input
+              id="description"
+              pInputText
+              type="text"
+              formControlName="description"
+              class="p-inputtext p-component"
+              [ngModel]="vm.searchCriteria.description"
+            />
+            <label for="description">{{ 'AI_CONTEXT_SEARCH.INPUT_FIELDS.DESCRIPTION' | translate }}</label>
+          </span>
+        </div>
+      </div>
+    </form>
+  </ocx-search-header>
+  <ocx-content-container layout="horizontal">
+    <ocx-content class="w-full">
+      <ocx-interactive-data-view
+        (deleteItem)="delete($event)"
+        deletePermission="AI_CONTEXT#DELETE"
+        (editItem)="edit($event)"
+        editPermission="AI_CONTEXT#EDIT"
+        (viewItem)="details($event)"
+        viewPermission="AI_CONTEXT#VIEW"
+        [data]="vm.results"
+        [columns]="vm.columns"
+        [emptyResultsMessage]="'AI_CONTEXT_SEARCH.EMPTY_RESULTS' | translate"
+        (displayedColumnsChange)="onDisplayedColumnsChange($event)"
+        [layout]="vm.resultComponentState?.layout ?? 'table'"
+        [displayedColumns]="vm.resultComponentState?.displayedColumns ?? []"
+        [supportedViewLayouts]="['table']"
+        [page]="vm.resultComponentState?.activePage ?? 0"
+        [pageSize]="vm.resultComponentState?.pageSize"
+        [filters]="vm.resultComponentState?.filters ?? []"
+        [sortField]="vm.resultComponentState?.sorting?.sortColumn"
+        [sortDirection]="vm.resultComponentState?.sorting?.sortDirection ?? defaultDataSortDirection"
+        [selectedRows]="vm.resultComponentState?.selectedRows?? []"
+        [defaultGroupKey]="vm.resultComponentState?.activeColumnGroupKey ?? ''"
+        [actionColumnPosition]="vm.resultComponentState?.actionColumnConfig?.position?? 'right'"
+        [frozenActionColumn]="vm.resultComponentState?.actionColumnConfig?.frozen ?? false"
+      >
+      </ocx-interactive-data-view>
+    </ocx-content>
+    <ocx-content
+      class="w-full lg:w-3"
+      *ngIf="vm.results.length > 0 &&
+        vm.chartVisible &&
+        (diagramColumn$ | async)
+    "
+    >
+      <div class="flex flex-column md:flex-row lg:flex-column justify-content-center">
+        <ocx-group-by-count-diagram
+          *ngIf="diagramColumn$ | async as diagramColumn"
+          [data]="vm.results"
+          [column]="diagramColumn"
+          sumKey="AI_CONTEXT_SEARCH.DIAGRAM.SUM"
+          [diagramType]="vm.diagramComponentState?.activeDiagramType ?? defaultDiagramType"
+          (componentStateChanged)="diagramComponentStateChanged($event)"
+        ></ocx-group-by-count-diagram>
+      </div>
+    </ocx-content>
+  </ocx-content-container>
+</ocx-portal-page>

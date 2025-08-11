@@ -110,18 +110,18 @@
               />
               <label for="aIProvider_detail_apiKey">{{ 'AI_PROVIDER_DETAILS.FORM.APIKEY' | translate }} </label>
             </span>
-            <a 
+            <a
               *ocxIfPermission="'AI_PROVIDER#CHANGE_API_KEY'"
               class="p-inputgroup-addon bg-primary pseudo-button pi pi-eye"
               [ngClass]="{
-                'pi-eye': vm.isApiKeyHidden, 
-                'pi-eye-slash': !vm.isApiKeyHidden, 
+                'pi-eye': vm.isApiKeyHidden,
+                'pi-eye-slash': !vm.isApiKeyHidden,
                 'cursor-pointer': vm.editMode,
                 'p-disabled': !vm.editMode
               }"
               tabindex="0"
               (click)="toggleApiKeyVisibility()"
-              (keydown.enter)="toggleApiKeyVisibility()" 
+              (keydown.enter)="toggleApiKeyVisibility()"
               [attr.aria-label]="'VIEW_API_KEY' | translate"
             >
             </a>

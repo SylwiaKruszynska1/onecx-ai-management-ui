@@ -5,6 +5,10 @@ import { addInitializeModuleGuard } from '@onecx/angular-integration-interface'
 import { startsWith } from '@onecx/angular-webcomponents'
 export const routes: Routes = [
   {
+    matcher: startsWith('ai-context'),
+    loadChildren: () => import('./ai-context/ai-context.module').then((mod) => mod.AiContextModule)
+  },
+  {
     matcher: startsWith('aiprovider'),
     loadChildren: () => import('./aiprovider/aiprovider.module').then((mod) => mod.AIProviderModule)
   },

@@ -50,6 +50,26 @@ app:
             VIEW: View mode for AIProvider
             SEARCH: Search AIProvider
             CHANGE_API_KEY: Change ApiKey AIProvider
+          AI_CONTEXT:
+            CREATE: Create aiContext
+            EDIT: Edit aiContext
+            DELETE: Delete aiContext
+            SAVE: Update and save aiContext
+            IMPORT: Import aiContext
+            EXPORT: Export aiContext
+            VIEW: View mode for aiContext
+            SEARCH: Search aiContext
+            BACK: Back to aiContext
+          AI_KNOWLEDGE_BASE:
+            CREATE: Create AIKnowledgeBase
+            EDIT: Edit AIKnowledgeBase
+            DELETE: Delete AIKnowledgeBase
+            SAVE: Update and save AIKnowledgeBase
+            IMPORT: Import AIKnowledgeBase
+            EXPORT: Export AIKnowledgeBase
+            VIEW: View mode for AIKnowledgeBase
+            SEARCH: Search AIKnowledgeBase
+            BACK: Back to AIKnowledgeBase
     keycloak:
       client:
         enabled: true

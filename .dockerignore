@@ -30,6 +30,7 @@ src
 /.sass-cache
 /connect.lock
 /coverage
+/reports
 /libpeerconnection.log
 npm-debug.log
 testem.log

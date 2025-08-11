@@ -1,5 +1,5 @@
 /**
- * onecx-ai-ui-bff
+ * onecx-ai-management-bff
  *
  * 
  *

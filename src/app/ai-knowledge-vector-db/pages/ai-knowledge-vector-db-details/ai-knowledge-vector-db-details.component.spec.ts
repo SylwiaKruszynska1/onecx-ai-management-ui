@@ -111,6 +111,17 @@ describe('AIKnowledgeVectorDbDetailsComponent', () => {
           description: 'string',
           aiContext: []
         },
+        provider: {
+          modificationCount: -2147483648,
+          id: 'string',
+          name: 'string',
+          description: 'string',
+          llmUrl: 'string',
+          appId: 'string',
+          modelName: 'string',
+          modelVersion: 'string',
+          apiKey: 'string'
+        },
         aIKnowledgeVectorDb: {
           modificationCount: -2147483648,
           id: 'string',
@@ -152,18 +163,7 @@ describe('AIKnowledgeVectorDbDetailsComponent', () => {
             documentRefId: 'string',
             status: AIKnowledgeDocumentStatusEnum.New
           }
-        ],
-        provider: {
-          modificationCount: -2147483648,
-          id: 'string',
-          name: 'string',
-          description: 'string',
-          llmUrl: 'string',
-          appId: 'string',
-          modelName: 'string',
-          modelVersion: 'string',
-          apiKey: 'string'
-        }
+        ]
       }
     },
     contexts: [],

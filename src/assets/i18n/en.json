@@ -115,6 +115,136 @@
       "APPID": "App Id"
     }
   },
+  "AI_CONTEXT_DETAILS": {
+    "HELP_ARTICLE_ID": "Help Article",
+    "BREADCRUMB": "Details",
+    "HEADER": "AiContext Details",
+    "SUB_HEADER": "Display of AiContext Details",
+    "ERROR_MESSAGES": {
+      "DETAILS_LOADING_FAILED": "Loading details failed."
+    },
+    "GENERAL": {
+      "BACK": "Back",
+      "MORE": "More",
+      "EDIT": " Edit",
+      "DELETE": "Delete",
+      "CANCEL": "Cancel",
+      "SAVE": "Save"
+    },
+    "FORM": {
+      "ID": "ID",
+      "APPID": "App Id",
+      "NAME": "Name",
+      "DESCRIPTION": "Description",
+      "AI_KNOWLEDGE_BASE": "AIKnowledgeBase",
+      "AIProvider": "AIProvider",
+      "AI_KNOWLEDGE_VECTOR_DB": "AIKnowledgeVectorDb",
+      "AI_KNOWLEDGE_URLS": "AIKnowledgeURLs",
+      "AI_KNOWLEDGE_DBS": "AIKnowledgeDatabases",
+      "AI_KNOWLEDGE_DOCUMENTS": "AIKnowledgeDocuments",
+      "AI_KNOWLEDGE_URLS_PLACEHOLDER": "Select AIKnowledge URLs",
+      "AI_KNOWLEDGE_DBS_PLACEHOLDER": "Select AIKnowledge Databases",
+      "AI_KNOWLEDGE_DOCUMENTS_PLACEHOLDER": "Select AIKnowledge Documents"
+    },
+    "CANCEL": {
+      "HEADER": "Confirm cancel",
+      "MESSAGE": "Please confirm that you want to cancel editing and reset changes.",
+      "CONFIRM": "Confirm"
+    },
+    "UPDATE": {
+      "SUCCESS": "Update successful",
+      "ERROR": "Update failed",
+      "FORM": {
+        "SAVE": "Save",
+        "CANCEL": "Cancel"
+      },
+      "HEADER": "Update AiContext"
+    },
+    "DELETE": {
+      "HEADER": "Delete AiContext",
+      "MESSAGE": "Please confirm that you want to delete this AiContext.",
+      "CONFIRM": "Confirm",
+      "CANCEL": "Cancel",
+      "SUCCESS": "AiContext deleted successfully",
+      "ERROR": "Could not delete AiContext"
+    },
+    "TABLE": {
+      "NAME": "Name",
+      "DESCRIPTION": "Description",
+      "URL": "URL",
+      "AI_KNOWLEDGE_DB": "AIKnowledgeDatabase",
+      "STATUS": "Status"
+    }
+  },
+  "AI_CONTEXT_SEARCH": {
+    "HEADER": "AiContext Search",
+    "SUB_HEADER": "Searching and displaying of AiContext",
+    "HELP_ARTICLE_ID": "Help Article",
+    "EMPTY_RESULTS": "No results.",
+    "BREADCRUMB": "Search",
+    "DIAGRAM": {
+      "SUM": "Total"
+    },
+    "HEADER_ACTIONS": {
+      "EXPORT_ALL": "Export all",
+      "SHOW_CHART": "Show chart",
+      "HIDE_CHART": "Hide chart",
+      "CREATE_SEARCH_CONFIG": "Create search configuration",
+      "UPDATE_SEARCH_CONFIG": "Update search configuration",
+      "DIALOG_CONFIRM": "Confirm",
+      "DIALOG_CANCEL": "Cancel"
+    },
+    "ERROR_MESSAGES": {
+      "SEARCH_RESULTS_LOADING_FAILED": "Loading search results failed.",
+      "SEARCH_CONFIG_CREATION_FAILED": "Create search configuration failed.",
+      "SEARCH_CONFIG_UPDATE_FAILED": "Update search configuration failed.",
+      "SEARCH_CONFIGS_LOADING_FAILED": "Loading search configurations failed."
+    },
+    "COLUMNS": {
+      "APPID": "App Id",
+      "NAME": "Name",
+      "DESCRIPTION": "Description"
+    },
+    "INPUT_FIELDS": {
+      "APPID": "App Id",
+      "NAME": "Name",
+      "DESCRIPTION": "Description"
+    },
+    "PREDEFINED_GROUP": {
+      "DEFAULT": "Default",
+      "EXTENDED": "Extended",
+      "FULL": "Full"
+    }
+  },
+  "AI_CONTEXT_CREATE_UPDATE": {
+    "ACTION": {
+      "CREATE": "Create"
+    },
+    "CREATE": {
+      "HEADER": "Create AiContext",
+      "SUCCESS": "Creation succesful",
+      "ERROR": "Creation failed",
+      "FORM": {
+        "SAVE": "Save",
+        "CANCEL": "Cancel"
+      }
+    },
+    "UPDATE": {
+      "SUCCESS": "Update successful",
+      "FAILED": "Update failed",
+      "ERROR": "Update failed",
+      "FORM": {
+        "SAVE": "Save",
+        "CANCEL": "Cancel"
+      },
+      "HEADER": "Update AiContext"
+    },
+    "FORM": {
+      "APPID": "App Id",
+      "NAME": "Name",
+      "DESCRIPTION": "Description"
+    }
+  },
   "AI_PROVIDER_DELETE": {
     "HEADER": "Delete AIProvider",
     "MESSAGE": "Please confirm that you want to delete this AIProvider.",
@@ -138,7 +268,7 @@
     },
     "UPDATE": {
       "SUCCESS": "Update successful",
-      "FAILED": "ACTION: Add Translation",
+      "FAILED": "Update failed",
       "ERROR": "Update failed",
       "FORM": {
         "SAVE": "Save",
@@ -246,7 +376,7 @@
     },
     "UPDATE": {
       "SUCCESS": "Update successful",
-      "FAILED": "ACTION: Add Translation",
+      "FAILED": "Update failed",
       "ERROR": "Update failed",
       "FORM": {
         "SAVE": "Save",
@@ -351,7 +481,7 @@
     },
     "UPDATE": {
       "SUCCESS": "Update successful",
-      "FAILED": "ACTION: Add Translation",
+      "FAILED": "Update failed",
       "ERROR": "Update failed",
       "FORM": {
         "SAVE": "Save",

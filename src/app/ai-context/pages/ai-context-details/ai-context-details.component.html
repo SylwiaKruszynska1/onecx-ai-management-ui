@@ -1,0 +1,193 @@
+<ocx-portal-page
+  permission="AI_CONTEXT#VIEW"
+  [helpArticleId]="'AI_CONTEXT_DETAILS.HELP_ARTICLE_ID' | translate"
+  *ngrxLet="viewModel$; let vm"
+>
+  <ocx-loading-indicator *ngIf="vm.detailsLoadingIndicator"> </ocx-loading-indicator>
+  <ocx-data-loading-error *ngIf="!vm.detailsLoaded && !vm.detailsLoadingIndicator"> </ocx-data-loading-error>
+  <div *ngIf="vm.detailsLoaded && !vm.detailsLoadingIndicator">
+    <ocx-page-header
+      [header]="'AI_CONTEXT_DETAILS.HEADER' | translate"
+      [subheader]="'AI_CONTEXT_DETAILS.SUB_HEADER' | translate"
+      [objectDetails]="(headerLabels$ | async) ?? []"
+      [actions]="(headerActions$ | async) ?? []"
+      [disableDefaultActions]="true"
+      [manualBreadcrumbs]="true"
+    >
+    </ocx-page-header>
+    <ocx-page-content>
+      <div class="surface-section mt-3 mb-1 mx-3">
+        <form [formGroup]="formGroup" errorTailor>
+          <div class="mt-3 mb-1">
+            <span class="p-float-label mb-1" controlErrorAnchor>
+              <input
+                pInputText
+                type="text"
+                id="aiContext_detail_name"
+                class="w-full pt-3 pb-2 text-responsive"
+                formControlName="name"
+              />
+              <label class="ocx-required-label" for="aiContext_detail_name">
+                {{ 'AI_CONTEXT_DETAILS.FORM.NAME' | translate }}
+              </label>
+            </span>
+          </div>
+          <div class="mt-3 mb-1">
+            <span class="p-float-label mb-1" controlErrorAnchor>
+              <input
+                pInputText
+                type="text"
+                id="aiContext_detail_description"
+                styleClass="w-full"
+                class="w-full pt-3 pb-2 text-responsive"
+                formControlName="description"
+              />
+              <label class="ocx-required-label" for="aiContext_detail_description">
+                {{ 'AI_CONTEXT_DETAILS.FORM.DESCRIPTION' | translate }}
+              </label>
+            </span>
+          </div>
+          <div class="mt-3 mb-1">
+            <span class="p-float-label mb-1" controlErrorAnchor>
+              <input
+                pInputText
+                type="text"
+                id="aiContext_detail_appId"
+                class="w-full pt-3 pb-2 text-responsive"
+                formControlName="appId"
+              />
+              <label class="ocx-required-label" for="aiContext_detail_appId">
+                {{ 'AI_CONTEXT_DETAILS.FORM.APPID' | translate }}
+              </label>
+            </span>
+          </div>
+
+          <div class="mt-3 mb-1">
+            <span class="p-float-label mb-1" controlErrorAnchor>
+              <p-autoComplete
+                id="aiContext_detail_knowledgeBase"
+                formControlName="AIKnowledgeBase"
+                [suggestions]="(filteredKnowledgeBases$ | async) ?? []"
+                (completeMethod)="searchKnowledgeBases($event)"
+                [dropdown]="true"
+                [field]="'name'"
+                [forceSelection]="true"
+                styleClass="w-full"
+              >
+                <ng-template let-item pTemplate="item"> {{ item.appId }} - {{ item.name }} </ng-template>
+              </p-autoComplete>
+              <label class="ocx-required-label" for="aiContext_detail_knowledgeBase">
+                {{ 'AI_CONTEXT_DETAILS.FORM.AI_KNOWLEDGE_BASE' | translate }}
+              </label>
+            </span>
+          </div>
+
+          <div class="mt-3 mb-1">
+            <span class="p-float-label mb-1" controlErrorAnchor>
+              <p-autoComplete
+                id="aiContext_detail_provider"
+                formControlName="provider"
+                [suggestions]="(filteredProviders$ | async) ?? []"
+                (completeMethod)="searchProviders($event)"
+                [dropdown]="true"
+                [field]="'name'"
+                [forceSelection]="true"
+                styleClass="w-full"
+              >
+                <ng-template let-item pTemplate="item"> {{ item.appId }} - {{ item.name }} </ng-template>
+              </p-autoComplete>
+              <label class="ocx-required-label" for="aiContext_detail_provider">
+                {{ 'AI_CONTEXT_DETAILS.FORM.AIProvider' | translate }}
+              </label>
+            </span>
+          </div>
+
+          <div class="mt-3 mb-1">
+            <span class="p-float-label mb-1" controlErrorAnchor>
+              <p-autoComplete
+                id="aiContext_detail_vectorDb"
+                formControlName="aIKnowledgeVectorDb"
+                [suggestions]="(filteredVectorDbs$ | async) ?? []"
+                (completeMethod)="searchVectorDbs($event)"
+                [dropdown]="true"
+                [field]="'name'"
+                [forceSelection]="true"
+                styleClass="w-full"
+              >
+                <ng-template let-item pTemplate="item">
+                  {{ item.name }} - {{ item.description | slice:0:30 }}{{ item.description?.length > 30 ? '...' : '' }}
+                </ng-template>
+              </p-autoComplete>
+              <label class="ocx-required-label" for="aiContext_detail_vectorDb">
+                {{ 'AI_CONTEXT_DETAILS.FORM.AI_KNOWLEDGE_VECTOR_DB' | translate }}
+              </label>
+            </span>
+          </div>
+
+          <div class="mt-3 mb-1">
+            <label class="block mb-2" for="knowledge-urls-multiselect">
+              {{ 'AI_CONTEXT_DETAILS.FORM.AI_KNOWLEDGE_URLS' | translate }}
+            </label>
+            <p-multiSelect
+              id="knowledge-urls-multiselect"
+              [options]="(knowledgeUrlOptions$ | async) ?? []"
+              formControlName="aIKnowledgeUrl"
+              optionLabel="name"
+              display="chip"
+              [filter]="true"
+              [placeholder]="'AI_CONTEXT_DETAILS.FORM.AI_KNOWLEDGE_URLS_PLACEHOLDER' | translate"
+              [showClear]="true"
+              styleClass="w-full"
+            >
+              <ng-template let-url pTemplate="item">
+                {{ url.name }} <span *ngIf="url.description">- {{ url.description }}</span>
+              </ng-template>
+            </p-multiSelect>
+          </div>
+
+          <div class="mt-3 mb-1">
+            <label class="block mb-2" for="knowledge-dbs-multiselect">
+              {{ 'AI_CONTEXT_DETAILS.FORM.AI_KNOWLEDGE_DBS' | translate }}
+            </label>
+            <p-multiSelect
+              id="knowledge-dbs-multiselect"
+              [options]="(knowledgeDbOptions$ | async) ?? []"
+              formControlName="aIKnowledgeDbs"
+              optionLabel="name"
+              display="chip"
+              [filter]="true"
+              [placeholder]="'AI_CONTEXT_DETAILS.FORM.AI_KNOWLEDGE_DBS_PLACEHOLDER' | translate"
+              [showClear]="true"
+              styleClass="w-full"
+            >
+              <ng-template let-db pTemplate="item">
+                {{ db.name }} <span *ngIf="db.description">- {{ db.description }}</span>
+              </ng-template>
+            </p-multiSelect>
+          </div>
+
+          <div class="mt-3 mb-1">
+            <label class="block mb-2" for="knowledge-documents-multiselect">
+              {{ 'AI_CONTEXT_DETAILS.FORM.AI_KNOWLEDGE_DOCUMENTS' | translate }}
+            </label>
+            <p-multiSelect
+              id="knowledge-documents-multiselect"
+              [options]="(documentOptions$ | async) ?? []"
+              formControlName="aIKnowledgeDocuments"
+              optionLabel="name"
+              display="chip"
+              [filter]="true"
+              [placeholder]="'AI_CONTEXT_DETAILS.FORM.AI_KNOWLEDGE_DOCUMENTS_PLACEHOLDER' | translate"
+              [showClear]="true"
+              styleClass="w-full"
+            >
+              <ng-template let-doc pTemplate="item">
+                {{ doc.name }} <span *ngIf="doc.status">- {{ doc.status }}</span>
+              </ng-template>
+            </p-multiSelect>
+          </div>
+        </form>
+      </div>
+    </ocx-page-content>
+  </div>
+</ocx-portal-page>
