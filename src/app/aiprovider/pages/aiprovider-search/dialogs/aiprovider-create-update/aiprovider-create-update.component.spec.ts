@@ -57,4 +57,27 @@ describe('AIProviderCreateUpdateComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy()
   })
+  
+  it('should set dialogResult with merged itemToEdit and form values on ocxDialogButtonClicked', () => {
+    component.vm.itemToEdit = { id: '1', name: 'Old', description: 'OldDesc', appId: 'OldApp' }
+    component.formGroup.setValue({ name: 'New', description: 'NewDesc', appId: 'NewApp' })
+    component.ocxDialogButtonClicked()
+    expect(component.dialogResult).toEqual({
+      id: '1',
+      name: 'New',
+      description: 'NewDesc',
+      appId: 'NewApp'
+    })
+  })
+
+  it('should patch formGroup with itemToEdit on ngOnInit', () => {
+    component.vm.itemToEdit = { id: '2', name: 'Patched', description: 'PatchedDesc', appId: 'PatchedApp' }
+    component.formGroup.setValue({ name: null, description: null, appId: null })
+    component.ngOnInit()
+    expect(component.formGroup.value).toEqual({
+      name: 'Patched',
+      description: 'PatchedDesc',
+      appId: 'PatchedApp'
+    })
+  })
 })

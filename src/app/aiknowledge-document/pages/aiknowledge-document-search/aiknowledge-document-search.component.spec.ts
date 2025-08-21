@@ -10,7 +10,7 @@ import { ofType } from '@ngrx/effects'
 import { Store, StoreModule } from '@ngrx/store'
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { TranslateService } from '@ngx-translate/core'
-import { BreadcrumbService, ColumnType, PortalCoreModule, UserService } from '@onecx/portal-integration-angular'
+import { BreadcrumbService, ColumnType, DataTableColumn, PortalCoreModule, RowListGridData, UserService } from '@onecx/portal-integration-angular'
 import { TranslateTestingModule } from 'ngx-translate-testing'
 import { PrimeIcons } from 'primeng/api'
 import { DialogService } from 'primeng/dynamicdialog'
@@ -18,9 +18,12 @@ import { AIKnowledgeDocumentSearchActions } from './aiknowledge-document-search.
 import { AIKnowledgeDocumentSearchColumns } from './aiknowledge-document-search.columns'
 import { AIKnowledgeDocumentSearchComponent } from './aiknowledge-document-search.component'
 import { AIKnowledgeDocumentSearchHarness } from './aiknowledge-document-search.harness'
-import { initialState } from './aiknowledge-document-search.reducers'
-import { selectAIKnowledgeDocumentSearchViewModel } from './aiknowledge-document-search.selectors'
+import { AIKnowledgeDocumentSearchReducer, initialState } from './aiknowledge-document-search.reducers'
+import { selectAIKnowledgeDocumentSearchViewModel, selectDisplayedColumns, selectResults } from './aiknowledge-document-search.selectors'
 import { AIKnowledgeDocumentSearchViewModel } from './aiknowledge-document-search.viewmodel'
+import { AIKnowledgeDocumentSearchCriteriasSchema } from './aiknowledge-document-search.parameters'
+import { AIKnowledgeDocumentStatusEnum } from 'src/app/shared/generated'
+import { routerNavigatedAction } from '@ngrx/router-store'
 
 describe('AIKnowledgeDocumentSearchComponent', () => {
   const origAddEventListener = window.addEventListener
@@ -128,6 +131,7 @@ describe('AIKnowledgeDocumentSearchComponent', () => {
     formBuilder = TestBed.inject(FormBuilder)
 
     store = TestBed.inject(MockStore)
+    jest.spyOn(store, 'dispatch')
     store.overrideSelector(selectAIKnowledgeDocumentSearchViewModel, baseAIKnowledgeDocumentSearchViewModel)
     store.refreshState()
 
@@ -277,7 +281,6 @@ describe('AIKnowledgeDocumentSearchComponent', () => {
   })
 
   it('should dispatch editAIKnowledgeDocumentButtonClicked action on item edit click', async () => {
-    jest.spyOn(store, 'dispatch')
 
     store.overrideSelector(selectAIKnowledgeDocumentSearchViewModel, {
       ...baseAIKnowledgeDocumentSearchViewModel,
@@ -321,7 +324,6 @@ describe('AIKnowledgeDocumentSearchComponent', () => {
   })
 
   it('should dispatch createAIKnowledgeDocumentButtonClicked action on create click', async () => {
-    jest.spyOn(store, 'dispatch')
 
     const header = await aIKnowledgeDocumentSearch.getHeader()
     const createButton = await (await header.getPageHeader()).getInlineActionButtonByIcon(PrimeIcons.PLUS)
@@ -335,7 +337,6 @@ describe('AIKnowledgeDocumentSearchComponent', () => {
   })
 
   it('should export csv data on export action click', async () => {
-    jest.spyOn(store, 'dispatch')
 
     const results = [
       {
@@ -371,7 +372,6 @@ describe('AIKnowledgeDocumentSearchComponent', () => {
   })
 
   it('should dispatch viewModeChanged action on view mode changes', async () => {
-    jest.spyOn(store, 'dispatch')
 
     component.viewModeChanged('advanced')
 
@@ -381,7 +381,6 @@ describe('AIKnowledgeDocumentSearchComponent', () => {
   })
 
   it('should dispatch displayedColumnsChanged on data view column change', async () => {
-    jest.spyOn(store, 'dispatch')
 
     fixture = TestBed.createComponent(AIKnowledgeDocumentSearchComponent)
     component = fixture.componentInstance
@@ -441,7 +440,6 @@ describe('AIKnowledgeDocumentSearchComponent', () => {
   })
 
   it('should dispatch chartVisibilityToggled on show/hide chart header', async () => {
-    jest.spyOn(store, 'dispatch')
 
     store.overrideSelector(selectAIKnowledgeDocumentSearchViewModel, {
       ...baseAIKnowledgeDocumentSearchViewModel,
@@ -558,5 +556,281 @@ describe('AIKnowledgeDocumentSearchComponent', () => {
 
     diagram = await aIKnowledgeDocumentSearch.getDiagram()
     expect(diagram).toBeTruthy()
+  })
+  describe('AIKnowledgeDocumentSearchComponent actions', () => {
+    it('should dispatch detailsButtonClicked action on details()', () => {
+      const rowData = { id: '123', imagePath: '' } 
+      component.details(rowData)
+      expect(store.dispatch).toHaveBeenCalledWith(
+        AIKnowledgeDocumentSearchActions.detailsButtonClicked({ id: '123' })
+      )
+    })
+
+    it('should dispatch deleteAIKnowledgeDocumentButtonClicked action on delete()', () => {
+      const rowData = { id: '456', imagePath: '' } 
+      component.delete(rowData)
+      expect(store.dispatch).toHaveBeenCalledWith(
+        AIKnowledgeDocumentSearchActions.deleteAIKnowledgeDocumentButtonClicked({ id: '456' })
+      )
+    })
+
+    it('should map valid Date value to ISO string in searchCriteria (for name)', () => {
+      const formBuilder = TestBed.inject(FormBuilder)
+      const localDate = new Date(2023, 7, 14, 12, 30, 45)
+      const expectedIso = new Date(Date.UTC(
+        localDate.getFullYear(),
+        localDate.getMonth(),
+        localDate.getDate(),
+        localDate.getHours(),
+        localDate.getMinutes(),
+        localDate.getSeconds()
+      )).toISOString()
+
+      const formValue = formBuilder.group({ name: localDate })
+      component.search(formValue)
+
+      expect(store.dispatch).toHaveBeenCalledWith(
+        AIKnowledgeDocumentSearchActions.searchButtonClicked({
+          searchCriteria: {
+            name: expectedIso
+          }
+        })
+      )
+    })
+  })
+
+  describe('AIKnowledgeDocumentSearch parameters', () => {
+    it('should transform status string to AIKnowledgeDocumentStatusEnum', () => {
+      const input = { status: 'NEW' }
+      const result = AIKnowledgeDocumentSearchCriteriasSchema.parse(input)
+      expect(result.status).toBe('NEW' as AIKnowledgeDocumentStatusEnum)
+    })
+
+    it('should allow undefined status', () => {
+      const input = {}
+      const result = AIKnowledgeDocumentSearchCriteriasSchema.parse(input)
+      expect(result.status).toBeUndefined()
+    })
+  })
+
+  describe('AIKnowledgeDocumentSearchReducer', () => {
+    it('should set criteria and searchLoadingIndicator on routerNavigatedAction with valid queryParams', () => {
+      const validQueryParams = { name: 'test' }
+      const action = routerNavigatedAction({
+        payload: {
+          routerState: {
+            root: {
+              queryParams: validQueryParams
+            }
+          }
+        }
+      } as any)
+      jest.spyOn(AIKnowledgeDocumentSearchCriteriasSchema, 'safeParse').mockReturnValue({
+        success: true,
+        data: validQueryParams
+      } as any)
+      const state = AIKnowledgeDocumentSearchReducer(initialState, action)
+      expect(state.criteria).toEqual(validQueryParams)
+      expect(state.searchLoadingIndicator).toBe(true)
+    })
+
+    it('should not change state on routerNavigatedAction with invalid queryParams', () => {
+      const action = routerNavigatedAction({
+        payload: {
+          routerState: {
+            root: {
+              queryParams: {}
+            }
+          }
+        }
+      } as any)
+      jest.spyOn(AIKnowledgeDocumentSearchCriteriasSchema, 'safeParse').mockReturnValue({
+        success: false
+      } as any)
+      const state = AIKnowledgeDocumentSearchReducer(initialState, action)
+      expect(state).toEqual(initialState)
+    })
+
+    it('should reset results and criteria on resetButtonClicked', () => {
+      const state = AIKnowledgeDocumentSearchReducer(
+        { ...initialState, results: [{
+          id: '1',
+          name: ''
+        }], criteria: { name: 'abc' } },
+        AIKnowledgeDocumentSearchActions.resetButtonClicked()
+      )
+      expect(state.results).toEqual(initialState.results)
+      expect(state.criteria).toEqual({})
+    })
+
+    it('should set searchLoadingIndicator and criteria on searchButtonClicked', () => {
+      const criteria = { name: 'abc' }
+      const state = AIKnowledgeDocumentSearchReducer(
+        initialState,
+        AIKnowledgeDocumentSearchActions.searchButtonClicked({ searchCriteria: criteria })
+      )
+      expect(state.searchLoadingIndicator).toBe(true)
+      expect(state.criteria).toEqual(criteria)
+    })
+
+    it('should set results on aIKnowledgeDocumentSearchResultsReceived', () => {
+      const results = [
+        { id: '1', imagePath: '', name: 'Document 1' }
+      ]
+      const state = AIKnowledgeDocumentSearchReducer(
+        initialState,
+        AIKnowledgeDocumentSearchActions.aIKnowledgeDocumentSearchResultsReceived({
+          results,
+          totalNumberOfResults: results.length
+        })
+      )
+      expect(state.results).toEqual(results)
+    })
+
+    it('should clear results on aIKnowledgeDocumentSearchResultsLoadingFailed', () => {
+      const state = AIKnowledgeDocumentSearchReducer(
+        { ...initialState, results: [{
+          id: '1',
+          name: ''
+        }] },
+        AIKnowledgeDocumentSearchActions.aIKnowledgeDocumentSearchResultsLoadingFailed({ error: null })
+      )
+      expect(state.results).toEqual([])
+    })
+
+    it('should set chartVisible on chartVisibilityRehydrated', () => {
+      const state = AIKnowledgeDocumentSearchReducer(
+        initialState,
+        AIKnowledgeDocumentSearchActions.chartVisibilityRehydrated({ visible: true })
+      )
+      expect(state.chartVisible).toBe(true)
+    })
+
+    it('should toggle chartVisible on chartVisibilityToggled', () => {
+      const state = AIKnowledgeDocumentSearchReducer(
+        { ...initialState, chartVisible: false },
+        AIKnowledgeDocumentSearchActions.chartVisibilityToggled()
+      )
+      expect(state.chartVisible).toBe(true)
+    })
+
+    it('should set viewMode on viewModeChanged', () => {
+      const state = AIKnowledgeDocumentSearchReducer(
+        initialState,
+        AIKnowledgeDocumentSearchActions.viewModeChanged({ viewMode: 'advanced' })
+      )
+      expect(state.viewMode).toBe('advanced')
+    })
+
+    it('should set displayedColumns on displayedColumnsChanged', () => {
+      const displayedColumns = [
+        { id: 'col1', nameKey: 'Col1', columnType: ColumnType.STRING },
+        { id: 'col2', nameKey: 'Col2', columnType: ColumnType.STRING }
+      ]
+      const state = AIKnowledgeDocumentSearchReducer(
+        initialState,
+        AIKnowledgeDocumentSearchActions.displayedColumnsChanged({ displayedColumns })
+      )
+      expect(state.displayedColumns).toEqual(['col1', 'col2'])
+    })
+  })
+
+  describe('AIKnowledgeDocumentSearch selectors', () => {
+    it('should map results to RowListGridData', () => {
+      const results = [
+        { id: '1', name: 'Doc1', documentRefId: 'ref1', status: AIKnowledgeDocumentStatusEnum.New },
+        { id: '2', name: 'Doc2', documentRefId: 'ref2', status: AIKnowledgeDocumentStatusEnum.Processing }
+      ]
+      const mapped = selectResults.projector(results)
+      expect(mapped).toEqual([
+        { imagePath: '', id: '1', name: 'Doc1', documentRefId: 'ref1', status: 'NEW' },
+        { imagePath: '', id: '2', name: 'Doc2', documentRefId: 'ref2', status: 'PROCESSING' }
+      ] as RowListGridData[])
+    })
+
+    it('should map displayedColumns to DataTableColumn[]', () => {
+      const columns: DataTableColumn[] = [
+        { id: 'col1', nameKey: 'Col1', columnType: ColumnType.STRING },
+        { id: 'col2', nameKey: 'Col2', columnType: ColumnType.STRING }
+      ]
+      const displayedColumns = ['col2', 'col1']
+      const mapped = selectDisplayedColumns.projector(columns, displayedColumns)
+      expect(mapped).toEqual([
+        columns[1], 
+        columns[0]  
+      ])
+    })
+
+    it('should return empty array if displayedColumns is undefined', () => {
+      const columns: DataTableColumn[] = [
+        { id: 'col1', nameKey: 'Col1', columnType: ColumnType.STRING }
+      ]
+      const mapped = selectDisplayedColumns.projector(columns, [])
+      expect(mapped).toEqual([])
+
+      const mappedNull = selectDisplayedColumns.projector(columns, null)
+      expect(mappedNull).toEqual([])
+    })
+
+    it('should build AIKnowledgeDocumentSearchViewModel', () => {
+      const columns: DataTableColumn[] = [
+        { id: 'col1', nameKey: 'Col1', columnType: ColumnType.STRING }
+      ]
+      const searchCriteria = { name: 'Doc' }
+      const results: RowListGridData[] = [
+        { imagePath: '', id: '1', name: 'Doc1', documentRefId: 'ref1', status: 'NEW' }
+      ]
+      const displayedColumns: DataTableColumn[] = columns
+      const viewMode = 'basic'
+      const chartVisible = true
+
+      const vm = selectAIKnowledgeDocumentSearchViewModel.projector(
+        columns,
+        searchCriteria,
+        results,
+        displayedColumns,
+        viewMode,
+        chartVisible
+      )
+      expect(vm).toEqual({
+        columns,
+        searchCriteria,
+        results,
+        displayedColumns,
+        viewMode,
+        chartVisible
+      })
+    })
+    it('should map falsy values to empty string', () => {
+      const stateResults = [
+        { id: '', name: '', documentRefId: '', status: undefined } 
+      ]
+      const result = selectResults.projector(stateResults)
+      expect(result).toEqual([
+        {
+          imagePath: '',
+          id: '',
+          name: '',
+          documentRefId: '',
+          status: ''
+        }
+      ])
+    })
+    
+    it('should map enum values to string', () => {
+      const stateResults = [
+        { id: '123', name: 'Doc', documentRefId: 'ref-1', status: AIKnowledgeDocumentStatusEnum.Embedded }
+      ]
+      const result = selectResults.projector(stateResults)
+      expect(result).toEqual([
+        {
+          imagePath: '',
+          id: '123',
+          name: 'Doc',
+          documentRefId: 'ref-1',
+          status: 'EMBEDDED'
+        }
+      ])
+    })
   })
 })

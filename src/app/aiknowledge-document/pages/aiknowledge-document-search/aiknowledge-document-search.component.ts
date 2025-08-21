@@ -107,7 +107,7 @@ export class AIKnowledgeDocumentSearchComponent implements OnInit {
               value.getMinutes(),
               value.getSeconds()
             )
-          )
+            ).toISOString()
           : value || undefined
       }),
       {}

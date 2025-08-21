@@ -52,4 +52,55 @@ describe('AIKnowledgeBaseCreateUpdateComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy()
   })
+  it('should emit primaryButtonEnabled as true when form is valid', (done) => {
+    component.formGroup.setValue({
+      id: '123',
+      name: 'Test Name',
+      description: 'Test Description'
+    })
+    component.primaryButtonEnabled.subscribe((enabled) => {
+      expect(enabled).toBe(true)
+      done()
+    })
+    component.formGroup.updateValueAndValidity()
+  })
+
+  it('should emit primaryButtonEnabled as false when form is invalid', (done) => {
+    component.formGroup.setValue({
+      id: '',
+      name: '',
+      description: ''
+    })
+    component.primaryButtonEnabled.subscribe((enabled) => {
+      expect(enabled).toBe(false)
+      done()
+    })
+    component.formGroup.updateValueAndValidity()
+  })
+
+  it('should set dialogResult with merged values on ocxDialogButtonClicked', () => {
+    component.vm.itemToEdit = { id: 'oldId', name: 'oldName', description: 'oldDesc' }
+    component.formGroup.setValue({
+      id: 'newId',
+      name: 'newName',
+      description: 'newDesc'
+    })
+    component.ocxDialogButtonClicked()
+    expect(component.dialogResult).toEqual({
+      id: 'newId',
+      name: 'newName',
+      description: 'newDesc'
+    })
+  })
+
+  it('should patch formGroup values from vm.itemToEdit on ngOnInit', () => {
+    component.vm.itemToEdit = { id: 'editId', name: 'editName', description: 'editDesc' }
+    component.ngOnInit()
+    expect(component.formGroup.value).toEqual({
+      id: 'editId',
+      name: 'editName',
+      description: 'editDesc'
+    })
+  })
+
 })

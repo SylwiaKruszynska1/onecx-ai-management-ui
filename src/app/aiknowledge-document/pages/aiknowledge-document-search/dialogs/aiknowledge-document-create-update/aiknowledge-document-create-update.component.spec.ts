@@ -7,6 +7,7 @@ import { LetDirective } from '@ngrx/component'
 import { BreadcrumbService, PortalCoreModule } from '@onecx/portal-integration-angular'
 import { TranslateTestingModule } from 'ngx-translate-testing'
 import { AIKnowledgeDocumentCreateUpdateComponent } from './aiknowledge-document-create-update.component'
+import { AIKnowledgeDocument } from 'src/app/shared/generated'
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -54,5 +55,42 @@ describe('AIKnowledgeDocumentCreateUpdateComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy()
+  })
+  it('should emit primaryButtonEnabled as true when form is valid', (done) => {
+    component.formGroup.setValue({ name: 'doc', documentRefId: 'ref' })
+    component.primaryButtonEnabled.subscribe((enabled) => {
+      expect(enabled).toBe(true)
+      done()
+    })
+    component.formGroup.updateValueAndValidity()
+  })
+
+  it('should emit primaryButtonEnabled as false when form is invalid', (done) => {
+    component.formGroup.setValue({ name: '', documentRefId: '' })
+    component.primaryButtonEnabled.subscribe((enabled) => {
+      expect(enabled).toBe(false)
+      done()
+    })
+    component.formGroup.updateValueAndValidity()
+  })
+
+  it('should set dialogResult with merged values on ocxDialogButtonClicked', () => {
+    component.vm.itemToEdit = { id: '1', name: 'old', documentRefId: 'oldRef' } as AIKnowledgeDocument
+    component.formGroup.setValue({ name: 'new', documentRefId: 'newRef' })
+    component.ocxDialogButtonClicked()
+    expect(component.dialogResult).toEqual({
+      id: '1',
+      name: 'new',
+      documentRefId: 'newRef'
+    })
+  })
+
+  it('should patch formGroup with itemToEdit on ngOnInit', () => {
+    component.vm.itemToEdit = { name: 'patched', documentRefId: 'patchedRef' } as AIKnowledgeDocument
+    component.ngOnInit()
+    expect(component.formGroup.value).toEqual({
+      name: 'patched',
+      documentRefId: 'patchedRef'
+    })
   })
 })
