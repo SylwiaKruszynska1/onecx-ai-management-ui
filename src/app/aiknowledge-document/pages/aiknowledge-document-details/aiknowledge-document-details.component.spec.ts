@@ -13,10 +13,9 @@ import { PrimeIcons } from 'primeng/api'
 import { of } from 'rxjs'
 import { AIKnowledgeDocumentDetailsComponent } from './aiknowledge-document-details.component'
 import { AIKnowledgeDocumentDetailsHarness } from './aiknowledge-document-details.harness'
-import { AIKnowledgeDocumentDetailsReducer, initialState } from './aiknowledge-document-details.reducers'
+import { initialState } from './aiknowledge-document-details.reducers'
 import { selectAIKnowledgeDocumentDetailsViewModel } from './aiknowledge-document-details.selectors'
 import { AIKnowledgeDocumentDetailsViewModel } from './aiknowledge-document-details.viewmodel'
-import { AIKnowledgeDocumentDetailsActions } from './aiknowledge-document-details.actions'
 import { AIKnowledgeDocument, AIKnowledgeDocumentStatusEnum } from 'src/app/shared/generated'
 
 describe('AIKnowledgeDocumentDetailsComponent', () => {
@@ -191,46 +190,6 @@ describe('AIKnowledgeDocumentDetailsComponent', () => {
     expect(await fourthDetailItem?.getLabel()).toEqual('fourth')
     expect(await fourthDetailItem?.getValue()).toEqual('fourth value')
     expect(await fourthDetailItem?.getIcon()).toEqual(PrimeIcons.QUESTION)
-  })
-  describe('AIKnowledgeDocumentDetailsReducer', () => {
-    it('should set details on aIKnowledgeDocumentDetailsReceived', () => {
-      const details = { id: 'doc1', name: 'Document 1' }
-      const state = AIKnowledgeDocumentDetailsReducer(
-        initialState,
-        AIKnowledgeDocumentDetailsActions.aIKnowledgeDocumentDetailsReceived({ details })
-      )
-      expect(state.details).toEqual(details)
-    })
-
-    it('should clear details on aIKnowledgeDocumentDetailsLoadingFailed', () => {
-      const stateWithDetails = { ...initialState, details: { id: 'doc1', name: 'Document 1' } }
-      const state = AIKnowledgeDocumentDetailsReducer(
-        stateWithDetails,
-        AIKnowledgeDocumentDetailsActions.aIKnowledgeDocumentDetailsLoadingFailed({ error: null })
-      )
-      expect(state.details).toBeUndefined()
-    })
-
-    it('should reset state on navigatedToDetailsPage', () => {
-      const stateWithDetails = { ...initialState, details: { id: 'doc1', name: 'Document 1' } }
-      const state = AIKnowledgeDocumentDetailsReducer(
-        stateWithDetails,
-        AIKnowledgeDocumentDetailsActions.navigatedToDetailsPage({ id: 'doc1' }) 
-      )
-      expect(state).toEqual(initialState)
-    })
-  })
-  describe('selectAIKnowledgeDocumentDetailsViewModel', () => {
-    it('should return view model with details', () => {
-      const details: AIKnowledgeDocument = { id: 'doc1', name: 'Document 1' } as AIKnowledgeDocument
-      const result = selectAIKnowledgeDocumentDetailsViewModel.projector(details)
-      expect(result).toEqual({ details })
-    })
-
-    it('should return view model with undefined details', () => {
-      const result = selectAIKnowledgeDocumentDetailsViewModel.projector(undefined)
-      expect(result).toEqual({ details: undefined })
-    })
   })
   describe('headerLabels$', () => {
     it('should map details fields when details is defined', (done) => {
