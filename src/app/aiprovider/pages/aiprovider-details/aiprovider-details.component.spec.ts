@@ -115,52 +115,52 @@ describe('AIProviderDetailsComponent', () => {
     fixture.detectChanges()
     aIProviderDetails = await TestbedHarnessEnvironment.harnessForFixture(fixture, AIProviderDetailsHarness)
   })
+  
+  describe('AIProviderDetailsComponent UI', () => {
+    it('should create', () => {
+      expect(component).toBeTruthy()
+    })
 
-  it('should create', () => {
-    expect(component).toBeTruthy()
-  })
+    it('should display correct breadcrumbs', async () => {
+      jest.spyOn(breadcrumbService, 'setItems')
 
-  it('should display correct breadcrumbs', async () => {
-    jest.spyOn(breadcrumbService, 'setItems')
+      component.ngOnInit()
+      fixture.detectChanges()
 
-    component.ngOnInit()
-    fixture.detectChanges()
+      expect(breadcrumbService.setItems).toHaveBeenCalledTimes(1)
+      const pageHeader = await aIProviderDetails.getHeader()
+      const searchBreadcrumbItem = await pageHeader.getBreadcrumbItem('Details')
+      expect(await searchBreadcrumbItem!.getText()).toEqual('Details')
+    })
 
-    expect(breadcrumbService.setItems).toHaveBeenCalledTimes(1)
-    const pageHeader = await aIProviderDetails.getHeader()
-    const searchBreadcrumbItem = await pageHeader.getBreadcrumbItem('Details')
-    expect(await searchBreadcrumbItem!.getText()).toEqual('Details')
-  })
+    it('should display translated headers', async () => {
+      const pageHeader = await aIProviderDetails.getHeader()
+      expect(await pageHeader.getHeaderText()).toEqual('AIProvider Details')
+      expect(await pageHeader.getSubheaderText()).toEqual('Display of AIProvider Details')
+    })
 
-  it('should display translated headers', async () => {
-    const pageHeader = await aIProviderDetails.getHeader()
-    expect(await pageHeader.getHeaderText()).toEqual('AIProvider Details')
-    expect(await pageHeader.getSubheaderText()).toEqual('Display of AIProvider Details')
-  })
+    it('should have 2 inline actions', async () => {
+      const pageHeader = await aIProviderDetails.getHeader()
+      const inlineActions = await pageHeader.getInlineActionButtons()
+      expect(inlineActions.length).toBe(2)
 
-  it('should have 2 inline actions', async () => {
-    const pageHeader = await aIProviderDetails.getHeader()
-    const inlineActions = await pageHeader.getInlineActionButtons()
-    expect(inlineActions.length).toBe(2)
+      const backAction = await pageHeader.getInlineActionButtonByLabel('Back')
+      expect(backAction).toBeTruthy()
 
-    const backAction = await pageHeader.getInlineActionButtonByLabel('Back')
-    expect(backAction).toBeTruthy()
+      const editAction = await pageHeader.getInlineActionButtonByLabel('Edit')
+      expect(editAction).toBeTruthy()
+    })
 
-    const editAction = await pageHeader.getInlineActionButtonByLabel('Edit')
-    expect(editAction).toBeTruthy()
-  })
+    it('should navigate back on back button click', async () => {
+      jest.spyOn(window.history, 'back')
 
-  it('should navigate back on back button click', async () => {
-    jest.spyOn(window.history, 'back')
+      const pageHeader = await aIProviderDetails.getHeader()
+      const backAction = await pageHeader.getInlineActionButtonByLabel('Back')
+      await backAction?.click()
 
-    const pageHeader = await aIProviderDetails.getHeader()
-    const backAction = await pageHeader.getInlineActionButtonByLabel('Back')
-    await backAction?.click()
-
-    expect(window.history.back).toHaveBeenCalledTimes(1)
-  })
-
-  it('should display item details in form fields', async () => {
+      expect(window.history.back).toHaveBeenCalledTimes(1)
+    })
+    it('should display item details in form fields', async () => {
       store.overrideSelector(selectAIProviderDetailsViewModel, baseAIProviderDetaulsViewModel)
       store.refreshState()
   
@@ -175,4 +175,22 @@ describe('AIProviderDetailsComponent', () => {
         apiKey: 'TestAPIKey'
       })
     })
+  })
+
+  describe('apiKey control safety', () => {
+    it('should safely call disable on apiKey control if it exists', () => {
+      const userMock = { hasPermission: () => false }
+      const component = new AIProviderDetailsComponent(store, breadcrumbService, userMock as any)
+      jest.spyOn(component.formGroup.get('apiKey')!, 'disable')
+      component.toggleEditMode(true)
+      expect(component.formGroup.get('apiKey')?.disable).toHaveBeenCalled()
+    })
+
+    it('should not throw if apiKey control does not exist', () => {
+      const userMock = { hasPermission: () => false }
+      const component = new AIProviderDetailsComponent(store, breadcrumbService, userMock as any)
+      component.formGroup.removeControl('apiKey')
+      expect(() => component.toggleEditMode(true)).not.toThrow()
+    })
+  })
 })

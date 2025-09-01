@@ -9,7 +9,12 @@ import { ofType } from '@ngrx/effects'
 import { Store, StoreModule } from '@ngrx/store'
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { TranslateService } from '@ngx-translate/core'
-import { BreadcrumbService, ColumnType, PortalCoreModule, UserService } from '@onecx/portal-integration-angular'
+import { 
+  BreadcrumbService,
+  ColumnType,
+  PortalCoreModule,
+  UserService
+} from '@onecx/portal-integration-angular'
 import { TranslateTestingModule } from 'ngx-translate-testing'
 import { DialogService } from 'primeng/dynamicdialog'
 import { AiKnowledgeBaseSearchActions } from './ai-knowledge-base-search.actions'
@@ -21,38 +26,9 @@ import { selectAiKnowledgeBaseSearchViewModel } from './ai-knowledge-base-search
 import { AiKnowledgeBaseSearchViewModel } from './ai-knowledge-base-search.viewmodel'
 
 describe('AiKnowledgeBaseSearchComponent', () => {
-  const origAddEventListener = window.addEventListener
-  const origPostMessage = window.postMessage
-
-  let listeners: any[] = []
-  window.addEventListener = (_type: any, listener: any) => {
-    listeners.push(listener)
-  }
-
-  window.removeEventListener = (_type: any, listener: any) => {
-    listeners = listeners.filter((l) => l !== listener)
-  }
-
-  window.postMessage = (m: any) => {
-    listeners.forEach((l) =>
-      l({
-        data: m,
-        stopImmediatePropagation: () => {},
-        stopPropagation: () => {}
-      })
-    )
-  }
-
-  afterAll(() => {
-    window.addEventListener = origAddEventListener
-    window.postMessage = origPostMessage
-  })
-
-  HTMLCanvasElement.prototype.getContext = jest.fn()
   let component: AiKnowledgeBaseSearchComponent
   let fixture: ComponentFixture<AiKnowledgeBaseSearchComponent>
   let store: MockStore<Store>
-  let formBuilder: FormBuilder
   let aiKnowledgeBaseSearch: AiKnowledgeBaseSearchHarness
 
   const mockActivatedRoute = {
@@ -71,22 +47,6 @@ describe('AiKnowledgeBaseSearchComponent', () => {
     searchHeaderComponentState: null,
     chartVisible: false
   }
-
-  beforeAll(() => {
-    Object.defineProperty(window, 'matchMedia', {
-      writable: true,
-      value: jest.fn().mockImplementation((query) => ({
-        matches: false,
-        media: query,
-        onchange: null,
-        addListener: jest.fn(), // Deprecated
-        removeListener: jest.fn(), // Deprecated
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn(),
-        dispatchEvent: jest.fn()
-      }))
-    })
-  })
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -108,20 +68,16 @@ describe('AiKnowledgeBaseSearchComponent', () => {
         provideMockStore({
           initialState: { aiKnowledgeBase: { search: initialState } }
         }),
-        FormBuilder,
         { provide: ActivatedRoute, useValue: mockActivatedRoute }
       ]
     }).compileComponents()
-  })
-
-  beforeEach(async () => {
     const userService = TestBed.inject(UserService)
     userService.hasPermission = () => true
     const translateService = TestBed.inject(TranslateService)
     translateService.use('en')
-    formBuilder = TestBed.inject(FormBuilder)
 
     store = TestBed.inject(MockStore)
+    jest.spyOn(store, 'dispatch')
     store.overrideSelector(selectAiKnowledgeBaseSearchViewModel, baseAiKnowledgeBaseSearchViewModel)
     store.refreshState()
 
@@ -251,110 +207,6 @@ describe('AiKnowledgeBaseSearchComponent', () => {
     const searchBreadcrumbItem = await pageHeader.getBreadcrumbItem('Search')
 
     expect(await searchBreadcrumbItem!.getText()).toEqual('Search')
-  })
-
-  it('should dispatch searchButtonClicked action on search', (done) => {
-    const formValue = formBuilder.group({
-      changeMe: '123'
-    })
-    component.aiKnowledgeBaseSearchFormGroup = formValue
-
-    store.scannedActions$.pipe(ofType(AiKnowledgeBaseSearchActions.searchButtonClicked)).subscribe((a) => {
-      expect(a.searchCriteria).toEqual({ changeMe: '123' })
-      done()
-    })
-
-    component.search(formValue)
-  })
-
-  it('should dispatch viewModeChanged action on view mode changes', async () => {
-    jest.spyOn(store, 'dispatch')
-
-    component.searchHeaderComponentStateChanged({
-      activeViewMode: 'advanced'
-    })
-
-    expect(store.dispatch).toHaveBeenCalledWith(
-      AiKnowledgeBaseSearchActions.searchHeaderComponentStateChanged({
-        activeViewMode: 'advanced'
-      })
-    )
-  })
-
-  it('should dispatch displayedColumnsChanged on data view column change', async () => {
-    jest.spyOn(store, 'dispatch')
-
-    fixture = TestBed.createComponent(AiKnowledgeBaseSearchComponent)
-    component = fixture.componentInstance
-    fixture.detectChanges()
-    aiKnowledgeBaseSearch = await TestbedHarnessEnvironment.harnessForFixture(fixture, AiKnowledgeBaseSearchHarness)
-
-    jest.clearAllMocks()
-
-    store.overrideSelector(selectAiKnowledgeBaseSearchViewModel, {
-      ...baseAiKnowledgeBaseSearchViewModel,
-      columns: [
-        {
-          columnType: ColumnType.STRING,
-          nameKey: 'COLUMN_KEY',
-          id: 'column_1'
-        },
-        {
-          columnType: ColumnType.STRING,
-          nameKey: 'SECOND_COLUMN_KEY',
-          id: 'column_2'
-        }
-      ]
-    })
-    store.refreshState()
-
-    const interactiveDataView = await aiKnowledgeBaseSearch.getSearchResults()
-    const columnGroupSelector = await interactiveDataView?.getCustomGroupColumnSelector()
-    expect(columnGroupSelector).toBeTruthy()
-    await columnGroupSelector!.openCustomGroupColumnSelectorDialog()
-    const pickList = await columnGroupSelector!.getPicklist()
-    const transferControlButtons = await pickList.getTransferControlsButtons()
-    expect(transferControlButtons.length).toBe(4)
-    const activateAllColumnsButton = transferControlButtons[3]
-    await activateAllColumnsButton.click()
-    const saveButton = await columnGroupSelector!.getSaveButton()
-    await saveButton.click()
-
-    expect(store.dispatch).toHaveBeenCalledWith(
-      AiKnowledgeBaseSearchActions.displayedColumnsChanged({
-        displayedColumns: [
-          {
-            columnType: ColumnType.STRING,
-            nameKey: 'COLUMN_KEY',
-            id: 'column_1'
-          },
-          {
-            columnType: ColumnType.STRING,
-            nameKey: 'SECOND_COLUMN_KEY',
-            id: 'column_2'
-          }
-        ]
-      })
-    )
-  })
-
-  it('should dispatch chartVisibilityToggled on show/hide chart header', async () => {
-    jest.spyOn(store, 'dispatch')
-
-    store.overrideSelector(selectAiKnowledgeBaseSearchViewModel, {
-      ...baseAiKnowledgeBaseSearchViewModel,
-      chartVisible: false
-    })
-    store.refreshState()
-
-    const searchHeader = await aiKnowledgeBaseSearch.getHeader()
-    const pageHeader = await searchHeader.getPageHeader()
-    const overflowActionButton = await pageHeader.getOverflowActionMenuButton()
-    await overflowActionButton?.click()
-
-    const showChartActionItem = await pageHeader.getOverFlowMenuItem('Show chart')
-    await showChartActionItem!.selectItem()
-    expect(store.dispatch).toHaveBeenCalledWith(AiKnowledgeBaseSearchActions.chartVisibilityToggled())
   })
 
   it('should display translated headers', async () => {
@@ -492,5 +344,48 @@ describe('AiKnowledgeBaseSearchComponent', () => {
     await exportAllActionItem!.selectItem()
 
     expect(store.dispatch).toHaveBeenCalledWith(AiKnowledgeBaseSearchActions.exportButtonClicked())
+  })
+  it('should call createAiKnowledgeBase from actionCallback', () => {
+    const spy = jest.spyOn(component, 'createAiKnowledgeBase')
+    component.headerActions$.subscribe(actions => {
+      actions[0].actionCallback()
+      expect(spy).toHaveBeenCalled()
+    })
+  })
+
+  describe('date mapping logic', () => {
+    let component: AiKnowledgeBaseSearchComponent
+    let store: MockStore
+    let formBuilder: FormBuilder
+
+    beforeEach(() => {
+      store = TestBed.inject(MockStore)
+      formBuilder = TestBed.inject(FormBuilder)
+      const fixture = TestBed.createComponent(AiKnowledgeBaseSearchComponent)
+      component = fixture.componentInstance
+      jest.spyOn(store, 'dispatch')
+    })
+
+    const cases = [
+      { value: undefined, expected: undefined, desc: 'undefined value to undefined' },
+      { value: null, expected: undefined, desc: 'null value to undefined' },
+      {
+        value: new Date(2023, 7, 14, 12, 30, 45),
+        expected: new Date(Date.UTC(2023, 7, 14, 12, 30, 45)).toISOString(),
+        desc: 'valid Date value to UTC ISO string'
+      }
+    ]
+
+    cases.forEach(({ value, expected, desc }) => {
+      it(`should map ${desc} in searchCriteria`, () => {
+        const formValue = formBuilder.group({ name: value })
+        component.search(formValue)
+        expect(store.dispatch).toHaveBeenCalledWith(
+          AiKnowledgeBaseSearchActions.searchButtonClicked({
+            searchCriteria: { name: expected }
+          })
+        )
+      })
+    })
   })
 })

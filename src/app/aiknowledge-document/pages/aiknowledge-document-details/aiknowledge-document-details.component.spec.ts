@@ -16,6 +16,7 @@ import { AIKnowledgeDocumentDetailsHarness } from './aiknowledge-document-detail
 import { initialState } from './aiknowledge-document-details.reducers'
 import { selectAIKnowledgeDocumentDetailsViewModel } from './aiknowledge-document-details.selectors'
 import { AIKnowledgeDocumentDetailsViewModel } from './aiknowledge-document-details.viewmodel'
+import { AIKnowledgeDocument, AIKnowledgeDocumentStatusEnum } from 'src/app/shared/generated'
 
 describe('AIKnowledgeDocumentDetailsComponent', () => {
   const origAddEventListener = window.addEventListener
@@ -189,5 +190,61 @@ describe('AIKnowledgeDocumentDetailsComponent', () => {
     expect(await fourthDetailItem?.getLabel()).toEqual('fourth')
     expect(await fourthDetailItem?.getValue()).toEqual('fourth value')
     expect(await fourthDetailItem?.getIcon()).toEqual(PrimeIcons.QUESTION)
+  })
+  describe('headerLabels$', () => {
+    it('should map details fields when details is defined', (done) => {
+      const details: AIKnowledgeDocument = {
+        id: 'doc1',
+        name: 'Test Name',
+        documentRefId: 'REF123',
+        status: AIKnowledgeDocumentStatusEnum.New
+      }
+      const viewModel: AIKnowledgeDocumentDetailsViewModel = { details }
+      store.overrideSelector(selectAIKnowledgeDocumentDetailsViewModel, viewModel)
+      store.refreshState()
+      fixture.detectChanges()
+      component.headerLabels$.subscribe(labels => {
+        expect(labels).toEqual([
+          { label: 'Name', value: 'Test Name' },
+          { label: 'DocumentRefId', value: 'REF123' },
+          { label: 'Status', value: 'NEW' }
+        ])
+        done()
+      })
+    })
+    it('should map details fields to empty string when details is undefined', (done) => {
+      store.overrideSelector(selectAIKnowledgeDocumentDetailsViewModel, { details: undefined })
+      store.refreshState()
+      fixture.detectChanges()
+      component.headerLabels$.subscribe(labels => {
+        expect(labels).toEqual([
+          { label: 'Name', value: '' },
+          { label: 'DocumentRefId', value: '' },
+          { label: 'Status', value: '' }
+        ])
+        done()
+      })
+    })
+
+    it('should map missing fields to empty string', (done) => {
+      const details: AIKnowledgeDocument = {
+        id: 'doc1',
+        name: '',
+        documentRefId: '',
+        status: undefined
+      }
+      const viewModel: AIKnowledgeDocumentDetailsViewModel = { details }
+      store.overrideSelector(selectAIKnowledgeDocumentDetailsViewModel, viewModel)
+      store.refreshState()
+      fixture.detectChanges()
+      component.headerLabels$.subscribe(labels => {
+        expect(labels).toEqual([
+          { label: 'Name', value: '' },
+          { label: 'DocumentRefId', value: '' },
+          { label: 'Status', value: '' }
+        ])
+        done()
+      })
+    })
   })
 })

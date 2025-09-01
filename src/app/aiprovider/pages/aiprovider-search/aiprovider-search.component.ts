@@ -105,7 +105,7 @@ export class AIProviderSearchComponent implements OnInit {
                 value.getMinutes(),
                 value.getSeconds()
               )
-            )
+            ).toISOString()
           : value || undefined
       }),
       {}

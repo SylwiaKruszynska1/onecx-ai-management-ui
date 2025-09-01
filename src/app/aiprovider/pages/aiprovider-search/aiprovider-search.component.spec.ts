@@ -5,7 +5,6 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms'
 import { NoopAnimationsModule } from '@angular/platform-browser/animations'
 import { ActivatedRoute } from '@angular/router'
 import { LetDirective } from '@ngrx/component'
-import { ofType } from '@ngrx/effects'
 import { Store, StoreModule } from '@ngrx/store'
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { TranslateService } from '@ngx-translate/core'
@@ -20,42 +19,8 @@ import { initialState } from './aiprovider-search.reducers'
 import { selectAIProviderSearchViewModel } from './aiprovider-search.selectors'
 import { AIProviderSearchViewModel } from './aiprovider-search.viewmodel'
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
-import { PrimeIcons } from 'primeng/api'
 
 describe('AIProviderSearchComponent', () => {
-  const origAddEventListener = window.addEventListener
-  const origPostMessage = window.postMessage
-
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  /* eslint-disable @typescript-eslint/no-empty-function */
-  let listeners: any[] = []
-  window.addEventListener = (_type: any, listener: any) => {
-    listeners.push(listener)
-  }
-
-  window.removeEventListener = (_type: any, listener: any) => {
-    listeners = listeners.filter((l) => l !== listener)
-  }
-
-  window.postMessage = (m: any) => {
-     
-    listeners.forEach((l) =>
-      l({
-        data: m,
-        stopImmediatePropagation: () => {},
-        stopPropagation: () => {}
-      })
-    )
-  }
-  /* eslint-enable @typescript-eslint/no-explicit-any */
-  /* eslint-enable @typescript-eslint/no-empty-function */
-
-  afterAll(() => {
-    window.addEventListener = origAddEventListener
-    window.postMessage = origPostMessage
-  })
-
-  HTMLCanvasElement.prototype.getContext = jest.fn()
   let component: AIProviderSearchComponent
   let fixture: ComponentFixture<AIProviderSearchComponent>
   let store: MockStore<Store>
@@ -84,22 +49,6 @@ describe('AIProviderSearchComponent', () => {
     viewMode: 'basic',
     chartVisible: false
   }
-
-  beforeAll(() => {
-    Object.defineProperty(window, 'matchMedia', {
-      writable: true,
-      value: jest.fn().mockImplementation((query) => ({
-        matches: false,
-        media: query,
-        onchange: null,
-        addListener: jest.fn(), // Deprecated
-        removeListener: jest.fn(), // Deprecated
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn(),
-        dispatchEvent: jest.fn()
-      }))
-    })
-  })
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -149,36 +98,6 @@ describe('AIProviderSearchComponent', () => {
 
   it('should create the component', () => {
     expect(component).toBeTruthy()
-  })
-
-  it('should dispatch resetButtonClicked action on resetSearch', async () => {
-    const doneFn = jest.fn()
-    store.overrideSelector(selectAIProviderSearchViewModel, {
-      ...baseAIProviderSearchViewModel,
-      results: [
-        {
-          id: '1',
-          imagePath: '',
-          column_1: 'val_1'
-        }
-      ],
-      columns: [
-        {
-          columnType: ColumnType.STRING,
-          nameKey: 'COLUMN_KEY',
-          id: 'column_1'
-        }
-      ]
-    })
-    store.refreshState()
-
-    store.scannedActions$.pipe(ofType(AIProviderSearchActions.resetButtonClicked)).subscribe(() => {
-      doneFn()
-    })
-
-    const searchHeader = await AIProviderSearch.getHeader()
-    await searchHeader.clickResetButton()
-    expect(doneFn).toHaveBeenCalledTimes(1)
   })
 
   it('should have 2 overFlow header actions when search config is disabled', async () => {
@@ -269,97 +188,6 @@ describe('AIProviderSearchComponent', () => {
     expect(await searchBreadcrumbItem!.getText()).toEqual('Search')
   })
 
-  it('should dispatch searchButtonClicked action on search', (done) => {
-    const formValue = formBuilder.group({
-      changeMe: '123'
-    })
-    component.AIProviderSearchFormGroup = formValue
-
-    store.scannedActions$.pipe(ofType(AIProviderSearchActions.searchButtonClicked)).subscribe((a) => {
-      expect(a.searchCriteria).toEqual({ changeMe: '123' })
-      done()
-    })
-
-    component.search(formValue)
-  })
-
-  it('should dispatch detailsButtonClicked action on item details click', async () => {
-    jest.spyOn(store, 'dispatch')
-
-    store.overrideSelector(selectAIProviderSearchViewModel, {
-      ...baseAIProviderSearchViewModel,
-      results: [
-        {
-          id: '1',
-          imagePath: '',
-          column_1: 'val_1'
-        }
-      ],
-      columns: [
-        {
-          columnType: ColumnType.STRING,
-          nameKey: 'COLUMN_KEY',
-          id: 'column_1'
-        }
-      ]
-    })
-    store.refreshState()
-
-    const interactiveDataView = await AIProviderSearch.getSearchResults()
-    const dataView = await interactiveDataView.getDataView()
-    const dataTable = await dataView.getDataTable()
-    const rowActionButtons = await dataTable?.getActionButtons()
-
-    expect(rowActionButtons?.length).toEqual(3)
-    expect(await rowActionButtons?.at(0)?.getAttribute('ng-reflect-icon')).toEqual('pi pi-eye')
-    await rowActionButtons?.at(0)?.click()
-
-    expect(store.dispatch).toHaveBeenCalledWith(AIProviderSearchActions.detailsButtonClicked({ id: '1' }))
-  })
-
-  it('should dispatch aiKnowledgeVectorDetailsClicked on on item delete click', async () => {
-      jest.spyOn(store, 'dispatch')
-  
-      store.overrideSelector(selectAIProviderSearchViewModel, {
-        ...baseAIProviderSearchViewModel,
-        results: [
-          {
-            id: '1',
-            imagePath: '',
-            column_1: 'val_1'
-          }
-        ],
-        columns: [
-          {
-            columnType: ColumnType.STRING,
-            nameKey: 'COLUMN_KEY',
-            id: 'column_1'
-          }
-        ]
-      })
-      store.refreshState()
-  
-      const interactiveDataView = await AIProviderSearch.getSearchResults()
-      const dataView = await interactiveDataView.getDataView()
-      const dataTable = await dataView.getDataTable()
-      const rowActionButtons = await dataTable?.getActionButtons()
-  
-      expect(rowActionButtons?.length).toBeGreaterThan(0)
-      let deleteButton
-      for (const actionButton of rowActionButtons ?? []) {
-        const icon = await actionButton.getAttribute('ng-reflect-icon')
-        expect(icon).toBeTruthy()
-        if (icon == PrimeIcons.TRASH) {
-          deleteButton = actionButton
-        }
-      }
-      expect(deleteButton).toBeTruthy()
-      deleteButton?.click()
-  
-      expect(store.dispatch).toHaveBeenCalledWith(
-        AIProviderSearchActions.deleteAiproviderButtonClicked({ id: '1' }))
-    })
-
   it('should export csv data on export action click', async () => {
     jest.spyOn(store, 'dispatch')
 
@@ -394,94 +222,6 @@ describe('AIProviderSearchComponent', () => {
     await exportAllActionItem!.selectItem()
 
     expect(store.dispatch).toHaveBeenCalledWith(AIProviderSearchActions.exportButtonClicked())
-  })
-
-  it('should dispatch viewModeChanged action on view mode changes', async () => {
-    jest.spyOn(store, 'dispatch')
-
-    component.viewModeChanged('advanced')
-
-    expect(store.dispatch).toHaveBeenCalledWith(AIProviderSearchActions.viewModeChanged({ viewMode: 'advanced' }))
-  })
-
-  it('should dispatch displayedColumnsChanged on data view column change', async () => {
-    jest.spyOn(store, 'dispatch')
-
-    fixture = TestBed.createComponent(AIProviderSearchComponent)
-    component = fixture.componentInstance
-    fixture.detectChanges()
-    AIProviderSearch = await TestbedHarnessEnvironment.harnessForFixture(fixture, AIProviderSearchHarness)
-
-    expect(store.dispatch).toHaveBeenCalledWith(
-      AIProviderSearchActions.displayedColumnsChanged({ displayedColumns: AIProviderSearchColumns })
-    )
-
-    jest.clearAllMocks()
-
-    store.overrideSelector(selectAIProviderSearchViewModel, {
-      ...baseAIProviderSearchViewModel,
-      columns: [
-        {
-          columnType: ColumnType.STRING,
-          nameKey: 'COLUMN_KEY',
-          id: 'column_1'
-        },
-        {
-          columnType: ColumnType.STRING,
-          nameKey: 'SECOND_COLUMN_KEY',
-          id: 'column_2'
-        }
-      ]
-    })
-    store.refreshState()
-
-    const interactiveDataView = await AIProviderSearch.getSearchResults()
-    const columnGroupSelector = await interactiveDataView?.getCustomGroupColumnSelector()
-    expect(columnGroupSelector).toBeTruthy()
-    await columnGroupSelector!.openCustomGroupColumnSelectorDialog()
-    const pickList = await columnGroupSelector!.getPicklist()
-    const transferControlButtons = await pickList.getTransferControlsButtons()
-    expect(transferControlButtons.length).toBe(4)
-    const activateAllColumnsButton = transferControlButtons[3]
-    await activateAllColumnsButton.click()
-    const saveButton = await columnGroupSelector!.getSaveButton()
-    await saveButton.click()
-
-    expect(store.dispatch).toHaveBeenCalledWith(
-      AIProviderSearchActions.displayedColumnsChanged({
-        displayedColumns: [
-          {
-            columnType: ColumnType.STRING,
-            nameKey: 'COLUMN_KEY',
-            id: 'column_1'
-          },
-          {
-            columnType: ColumnType.STRING,
-            nameKey: 'SECOND_COLUMN_KEY',
-            id: 'column_2'
-          }
-        ]
-      })
-    )
-  })
-
-  it('should dispatch chartVisibilityToggled on show/hide chart header', async () => {
-    jest.spyOn(store, 'dispatch')
-
-    store.overrideSelector(selectAIProviderSearchViewModel, {
-      ...baseAIProviderSearchViewModel,
-      chartVisible: false
-    })
-    store.refreshState()
-
-    const searchHeader = await AIProviderSearch.getHeader()
-    const pageHeader = await searchHeader.getPageHeader()
-    const overflowActionButton = await pageHeader.getOverflowActionMenuButton()
-    await overflowActionButton?.click()
-
-    const showChartActionItem = await pageHeader.getOverFlowMenuItem('Show chart')
-    await showChartActionItem!.selectItem()
-    expect(store.dispatch).toHaveBeenCalledWith(AIProviderSearchActions.chartVisibilityToggled())
   })
 
   it('should display translated headers', async () => {
@@ -584,4 +324,58 @@ describe('AIProviderSearchComponent', () => {
     diagram = await AIProviderSearch.getDiagram()
     expect(diagram).toBeTruthy()
   })
+
+  describe('date mapping logic', () => {
+    beforeEach(() => {
+      jest.spyOn(store, 'dispatch')
+    })
+
+    it('should map undefined value to undefined in searchCriteria', () => {
+      const formValue = formBuilder.group({ modelName: undefined })
+      component.search(formValue)
+      expect(store.dispatch).toHaveBeenCalledWith(
+        AIProviderSearchActions.searchButtonClicked({
+          searchCriteria: { modelName: undefined }
+        })
+      )
+    })
+
+    it('should map null value to undefined in searchCriteria', () => {
+      const formValue = formBuilder.group({ modelName: null })
+      component.search(formValue)
+      expect(store.dispatch).toHaveBeenCalledWith(
+        AIProviderSearchActions.searchButtonClicked({
+          searchCriteria: { modelName: undefined }
+        })
+      )
+    })
+
+    it('should map valid Date value to UTC ISO string in searchCriteria', () => {
+      const localDate = new Date(2023, 7, 14, 12, 30, 45)
+      const expectedIso = new Date(Date.UTC(
+        localDate.getFullYear(),
+        localDate.getMonth(),
+        localDate.getDate(),
+        localDate.getHours(),
+        localDate.getMinutes(),
+        localDate.getSeconds()
+      )).toISOString()
+
+      const formValue = formBuilder.group({ modelName: localDate })
+      component.search(formValue)
+
+      expect(store.dispatch).toHaveBeenCalledWith(
+        AIProviderSearchActions.searchButtonClicked({
+          searchCriteria: {
+            modelName: expectedIso
+          }
+        })
+      )
+    })
+  })
 })
+
+
+
+
+

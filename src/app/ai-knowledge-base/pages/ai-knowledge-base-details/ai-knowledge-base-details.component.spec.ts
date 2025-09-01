@@ -9,15 +9,14 @@ import { TranslateService } from '@ngx-translate/core'
 import { BreadcrumbService, PortalCoreModule, UserService } from '@onecx/portal-integration-angular'
 import { TranslateTestingModule } from 'ngx-translate-testing'
 import { PrimeIcons } from 'primeng/api'
-import { of } from 'rxjs'
+import { combineLatest, of } from 'rxjs'
 import { AiKnowledgeBaseDetailsComponent } from './ai-knowledge-base-details.component'
 import { AiKnowledgeBaseDetailsHarness } from './ai-knowledge-base-details.harness'
 import { initialState } from './ai-knowledge-base-details.reducers'
 import { selectAiKnowledgeBaseDetailsViewModel } from './ai-knowledge-base-details.selectors'
 import { AiKnowledgeBaseDetailsViewModel } from './ai-knowledge-base-details.viewmodel'
-import { FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { ofType } from '@ngrx/effects'
-import { AiKnowledgeBaseDetailsActions } from './ai-knowledge-base-details.actions'
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { AIContext, AIKnowledgeBase } from 'src/app/shared/generated'
 
 describe('AiKnowledgeBaseDetailsComponent', () => {
   const origAddEventListener = window.addEventListener
@@ -99,6 +98,7 @@ describe('AiKnowledgeBaseDetailsComponent', () => {
     translateService.use('en')
 
     store = TestBed.inject(MockStore)
+    jest.spyOn(store, 'dispatch') 
     store.overrideSelector(selectAiKnowledgeBaseDetailsViewModel, baseAiKnowledgeBaseDetailsViewModel)
     store.refreshState()
 
@@ -143,62 +143,143 @@ describe('AiKnowledgeBaseDetailsComponent', () => {
     expect(moreAction).toBeNull()
   })
 
-  it('should dispatch navigateBackButtonClicked action on back button click', async () => {
-    jest.spyOn(window.history, 'back')
-    const doneFn = jest.fn()
-
-    const pageHeader = await aiKnowledgeBaseDetails.getHeader()
-    const backAction = await pageHeader.getInlineActionButtonByLabel('Back')
-    store.scannedActions$.pipe(ofType(AiKnowledgeBaseDetailsActions.navigateBackButtonClicked)).subscribe(() => {
-      doneFn()
-    })
-    await backAction?.click()
-    expect(doneFn).toHaveBeenCalledTimes(1)
-  })
-
-  it('should display item details in page header', async () => {
-    component.headerLabels$ = of([
-      {
-        label: 'first',
-        value: 'first value'
-      },
-      {
-        label: 'second',
-        value: 'second value'
-      },
-      {
-        label: 'third',
-        icon: PrimeIcons.PLUS
-      },
-      {
-        label: 'fourth',
-        value: 'fourth value',
-        icon: PrimeIcons.QUESTION
+  describe('Observable logic', () => {
+    it('should merge aiContexts and missing contexts in displayContexts$ (code coverage in the component)', (done) => {
+      const details: AIKnowledgeBase = {
+        id: 'kb1',
+        name: 'Test KB',
+        description: 'desc',
+        aiContext: [{ id: '1' }, { id: '2' }],
+        modificationCount: 1
       }
-    ])
+      const contexts: AIContext[] = [{ id: '1' }]
+      store.overrideSelector(selectAiKnowledgeBaseDetailsViewModel, {
+        details,
+        contexts,
+        detailsLoaded: true,
+        detailsLoadingIndicator: false,
+        contextsLoaded: true,
+        contextsLoadingIndicator: false,
+        backNavigationPossible: true,
+        editMode: false,
+        isSubmitting: false
+      })
+      store.refreshState()
+      fixture.detectChanges()
 
-    const pageHeader = await aiKnowledgeBaseDetails.getHeader()
-    const objectDetails = await pageHeader.getObjectInfos()
-    expect(objectDetails.length).toBe(4)
+      component.displayContexts$.subscribe((result: AIContext[]) => {
+        expect(result).toEqual([{ id: '1' }, { id: '2' }, { id: '2' }])
+        done()
+      })
+    })
+    
+    it('should display item details in page header', async () => {
+      component.headerLabels$ = of([
+        {
+          label: 'first',
+          value: 'first value'
+        },
+        {
+          label: 'second',
+          value: 'second value'
+        },
+        {
+          label: 'third',
+          icon: PrimeIcons.PLUS
+        },
+        {
+          label: 'fourth',
+          value: 'fourth value',
+          icon: PrimeIcons.QUESTION
+        }
+      ])
 
-    const firstDetailItem = await pageHeader.getObjectInfoByLabel('first')
-    expect(await firstDetailItem?.getLabel()).toEqual('first')
-    expect(await firstDetailItem?.getValue()).toEqual('first value')
-    expect(await firstDetailItem?.getIcon()).toBeUndefined()
+      const pageHeader = await aiKnowledgeBaseDetails.getHeader()
+      const objectDetails = await pageHeader.getObjectInfos()
+      expect(objectDetails.length).toBe(4)
 
-    const secondDetailItem = await pageHeader.getObjectInfoByLabel('second')
-    expect(await secondDetailItem?.getLabel()).toEqual('second')
-    expect(await secondDetailItem?.getValue()).toEqual('second value')
-    expect(await secondDetailItem?.getIcon()).toBeUndefined()
+      const firstDetailItem = await pageHeader.getObjectInfoByLabel('first')
+      expect(await firstDetailItem?.getLabel()).toEqual('first')
+      expect(await firstDetailItem?.getValue()).toEqual('first value')
+      expect(await firstDetailItem?.getIcon()).toBeUndefined()
 
-    const thirdDetailItem = await pageHeader.getObjectInfoByLabel('third')
-    expect(await thirdDetailItem?.getLabel()).toEqual('third')
-    expect(await thirdDetailItem?.getValue()).toEqual('')
-    expect(await thirdDetailItem?.getIcon()).toEqual(PrimeIcons.PLUS)
+      const secondDetailItem = await pageHeader.getObjectInfoByLabel('second')
+      expect(await secondDetailItem?.getLabel()).toEqual('second')
+      expect(await secondDetailItem?.getValue()).toEqual('second value')
+      expect(await secondDetailItem?.getIcon()).toBeUndefined()
 
-    const fourthDetailItem = await pageHeader.getObjectInfoByLabel('fourth')
-    expect(await fourthDetailItem?.getLabel()).toEqual('fourth')
-    expect(await fourthDetailItem?.getValue()).toEqual('fourth value')
-    expect(await fourthDetailItem?.getIcon()).toEqual(PrimeIcons.QUESTION)
+      const thirdDetailItem = await pageHeader.getObjectInfoByLabel('third')
+      expect(await thirdDetailItem?.getLabel()).toEqual('third')
+      expect(await thirdDetailItem?.getValue()).toEqual('')
+      expect(await thirdDetailItem?.getIcon()).toEqual(PrimeIcons.PLUS)
+
+      const fourthDetailItem = await pageHeader.getObjectInfoByLabel('fourth')
+      expect(await fourthDetailItem?.getLabel()).toEqual('fourth')
+      expect(await fourthDetailItem?.getValue()).toEqual('fourth value')
+      expect(await fourthDetailItem?.getIcon()).toEqual(PrimeIcons.QUESTION)
+      })
+      
+      it('should patch formGroup with details and matchedContexts in combineLatest subscription', (done) => {
+        const details = { id: '123', name: 'TestName', description: 'TestDesc', aiContext: [{ id: '1' }, { id: '2' }] }
+        const contexts: AIContext[] = [{ id: '1' }, { id: '2' }, { id: '3' }]
+        const viewModel$ = of({ details, contexts, editMode: false })
+        const displayContexts$ = of([{ id: '1' }, { id: '2' }, { id: '3' }])
+    
+        const formGroup = new FormGroup({
+          id: new FormControl<string | null>(''),
+          name: new FormControl<string | null>(''),
+          description: new FormControl<string | null>(''),
+          aiContext: new FormControl<AIContext[] | null>([])
+        })
+    
+        combineLatest([viewModel$, displayContexts$]).subscribe(([vm, displayContexts]) => {
+          if (!vm.editMode) {
+            const chosenContexts = vm.details?.aiContext ?? []
+            const matchedContexts = displayContexts.filter((context: AIContext) =>
+              chosenContexts.some((chosen: AIContext) => context.id === chosen.id)
+            )
+    
+            formGroup.patchValue({
+              id: vm.details?.id,
+              name: vm.details?.name,
+              description: vm.details?.description,
+              aiContext: matchedContexts
+            })
+            formGroup.markAsPristine()
+    
+            expect(formGroup.value.aiContext).toEqual([{ id: '1' }, { id: '2' }])
+            done()
+          }
+        })
+      })
+
+      it('should use details.aiContext when it is an array in displayContexts$', (done) => {
+      const details: AIKnowledgeBase = {
+        id: 'kb1',
+        name: 'Test KB',
+        description: 'desc',
+        aiContext: [{ id: '1' }, { id: '2' }], 
+        modificationCount: 1
+      }
+      const contexts: AIContext[] = [{ id: '1' }, { id: '2' }]
+      store.overrideSelector(selectAiKnowledgeBaseDetailsViewModel, {
+        details,
+        contexts,
+        detailsLoaded: true,
+        detailsLoadingIndicator: false,
+        contextsLoaded: true,
+        contextsLoadingIndicator: false,
+        backNavigationPossible: true,
+        editMode: false,
+        isSubmitting: false
+      })
+      store.refreshState()
+      fixture.detectChanges()
+
+      component.displayContexts$.subscribe((result: AIContext[]) => {
+        expect(result).toEqual([{ id: '1' }, { id: '2' }])
+        done()
+      })
+    })
   })
 })

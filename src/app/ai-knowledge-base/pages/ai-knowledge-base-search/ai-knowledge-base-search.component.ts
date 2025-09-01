@@ -121,7 +121,7 @@ export class AiKnowledgeBaseSearchComponent implements OnInit {
                 value.getMinutes(),
                 value.getSeconds()
               )
-            )
+            ).toISOString()
           : value || undefined
       }),
       {}
