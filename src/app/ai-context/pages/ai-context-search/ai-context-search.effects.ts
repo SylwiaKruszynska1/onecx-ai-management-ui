@@ -19,6 +19,7 @@ import { PrimeIcons } from 'primeng/api'
 
 @Injectable()
 export class AiContextSearchEffects {
+  [x: string]: any
   constructor(
     private readonly portalDialogService: PortalDialogService,
     private readonly actions$: Actions,

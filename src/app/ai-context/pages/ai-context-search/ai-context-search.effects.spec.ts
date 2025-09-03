@@ -4,7 +4,7 @@ import { RouterTestingModule } from '@angular/router/testing'
 import { Store } from '@ngrx/store'
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { provideMockActions } from '@ngrx/effects/testing'
-import { ReplaySubject, of, throwError } from 'rxjs'
+import { MonoTypeOperatorFunction, ReplaySubject, map, of, throwError } from 'rxjs'
 import { AIContextBffService } from '../../../shared/generated'
 import { ExportDataService, PortalMessageService, PortalDialogService } from '@onecx/portal-integration-angular'
 import { AiContextSearchEffects } from './ai-context-search.effects'
@@ -15,6 +15,23 @@ import { initialState } from './ai-context-search.reducers'
 import { selectUrl } from 'src/app/shared/selectors/router.selectors'
 import { AiContextSearchViewModel } from './ai-context-search.viewmodel'
 import { AiContextCreateUpdateComponent } from './dialogs/ai-context-create-update/ai-context-create-update.component'
+import { routerNavigatedAction } from '@ngrx/router-store'
+
+jest.mock('@onecx/ngrx-accelerator', () => {
+  const actual = jest.requireActual('@onecx/ngrx-accelerator')
+  const passThroughOp = <T>(): MonoTypeOperatorFunction<T> => map((x: T) => x)
+  return {
+    ...actual,
+    filterForNavigatedTo: jest.fn((...args: unknown[]) => {
+      void args
+      return passThroughOp()
+    }),
+    filterOutQueryParamsHaveNotChanged: jest.fn((...args: unknown[]) => {
+      void args
+      return passThroughOp()
+    })
+  }
+})
 
 describe('AiContextSearchEffects', () => {
   const mockActivatedRoute = {
@@ -226,6 +243,28 @@ describe('AiContextSearchEffects', () => {
       )
     })
 
+    it('should call performSearch with criteria from store on router navigation', (done) => {
+      const expectedAction = AiContextSearchActions.aiContextSearchResultsReceived({
+        stream: [],
+        size: 0,
+        number: 0,
+        totalElements: 0,
+        totalPages: 0
+      })
+
+      const performSpy = jest
+        .spyOn(effects, 'performSearch')
+        .mockReturnValue(of(expectedAction) as any)
+
+      actions$.next({ type: routerNavigatedAction.type })
+
+      effects.searchByUrl$.subscribe((action) => {
+        expect(performSpy).toHaveBeenCalledWith(mockCriteria)
+        expect(action).toEqual(expectedAction)
+        done()
+      })
+    })
+
     it('should call performSearch and dispatch aiContextSearchResultsReceived on successful search', (done) => {
       effects.performSearch(mockCriteria).subscribe((action) => {
         expect(action.type).toEqual(AiContextSearchActions.aiContextSearchResultsReceived.type)
@@ -292,41 +331,23 @@ describe('AiContextSearchEffects', () => {
           totalPages: 1
         }) as never
       )
-    })
-
-    it('should trigger search when createAiContextSucceeded action is dispatched', (done) => {
-      actions$.next(AiContextSearchActions.createAiContextSucceeded())
-
-      effects.refreshSearchAfterCreateUpdate$.subscribe((action) => {
-        expect(action.type).toEqual(AiContextSearchActions.aiContextSearchResultsReceived.type)
-        expect(action).toEqual(
-          AiContextSearchActions.aiContextSearchResultsReceived({
-            stream: [{ id: '2', name: 'Updated Context' }],
-            size: 10,
-            number: 0,
-            totalElements: 1,
-            totalPages: 1
-          })
-        )
-        done()
-      })
-    })
-
-    it('should trigger search when updateAiContextSucceeded action is dispatched', (done) => {
-      actions$.next(AiContextSearchActions.updateAiContextSucceeded())
-
-      effects.refreshSearchAfterCreateUpdate$.subscribe((action) => {
-        expect(action.type).toEqual(AiContextSearchActions.aiContextSearchResultsReceived.type)
-        expect(action).toEqual(
-          AiContextSearchActions.aiContextSearchResultsReceived({
-            stream: [{ id: '2', name: 'Updated Context' }],
-            size: 10,
-            number: 0,
-            totalElements: 1,
-            totalPages: 1
-          })
-        )
-        done()
+    });
+    [
+      {
+        desc: 'should trigger search when createAiContextSucceeded action is dispatched',
+        action: AiContextSearchActions.createAiContextSucceeded()
+      },
+      {
+        desc: 'should trigger search when updateAiContextSucceeded action is dispatched',
+        action: AiContextSearchActions.updateAiContextSucceeded()
+      }
+    ].forEach(({ desc, action }) => {
+      it(desc, (done) => {
+        actions$.next(action)
+        effects.refreshSearchAfterCreateUpdate$.subscribe((effectAction) => {
+          expect(effectAction.type).toEqual(AiContextSearchActions.aiContextSearchResultsReceived.type)
+          done()
+        })
       })
     })
 
@@ -387,38 +408,28 @@ describe('AiContextSearchEffects', () => {
         })
         done()
       })
-    })
+    });
 
-    it('should dispatch updateAiContextCancelled when dialog is cancelled', (done) => {
-      const mockDialogResult = {
-        button: 'secondary',
-        result: null
-      }
-
-      portalDialogService.openDialog.mockReturnValue(of(mockDialogResult) as never)
-
+   [
+    {
+      desc: 'should dispatch updateAiContextCancelled when dialog is cancelled',
+      dialogResult: { button: 'secondary', result: null }
+    },
+    {
+      desc: 'should dispatch updateAiContextCancelled when dialog result is null',
+      dialogResult: null
+    }
+  ].forEach(({ desc, dialogResult }) => {
+    it(desc, (done) => {
+      portalDialogService.openDialog.mockReturnValue(of(dialogResult) as never)
       actions$.next(AiContextSearchActions.editAiContextButtonClicked({ id: 'test-123' }))
-
       effects.editButtonClicked$.subscribe((action) => {
         expect(action.type).toEqual(AiContextSearchActions.updateAiContextCancelled.type)
         expect(aiContextService.updateAIContext).not.toHaveBeenCalled()
         done()
       })
     })
-
-    it('should dispatch updateAiContextCancelled when dialog result is null', (done) => {
-      const mockDialogResult = null
-
-      portalDialogService.openDialog.mockReturnValue(of(mockDialogResult) as never)
-
-      actions$.next(AiContextSearchActions.editAiContextButtonClicked({ id: 'test-123' }))
-
-      effects.editButtonClicked$.subscribe((action) => {
-        expect(action.type).toEqual(AiContextSearchActions.updateAiContextCancelled.type)
-        expect(aiContextService.updateAIContext).not.toHaveBeenCalled()
-        done()
-      })
-    })
+  })
 
     it('should dispatch updateAiContextFailed when API call fails', (done) => {
       const mockDialogResult = {
@@ -626,36 +637,26 @@ describe('AiContextSearchEffects', () => {
         })
         done()
       })
-    })
+    });
 
-    it('should dispatch deleteAiContextCancelled when dialog is cancelled', (done) => {
-      const mockDialogResult = {
-        button: 'secondary',
-        result: null
+    [
+      {
+        desc: 'should dispatch deleteAiContextCancelled when dialog is cancelled',
+        dialogResult: { button: 'secondary', result: null }
+      },
+      {
+        desc: 'should dispatch deleteAiContextCancelled when dialog result is null',
+        dialogResult: null
       }
-
-      portalDialogService.openDialog.mockReturnValue(of(mockDialogResult) as never)
-
-      actions$.next(AiContextSearchActions.deleteAiContextButtonClicked({ id: 'test-123' }))
-
-      effects.deleteButtonClicked$.subscribe((action) => {
-        expect(action.type).toEqual(AiContextSearchActions.deleteAiContextCancelled.type)
-        expect(aiContextService.deleteAIContext).not.toHaveBeenCalled()
-        done()
-      })
-    })
-
-    it('should dispatch deleteAiContextCancelled when dialog result is null', (done) => {
-      const mockDialogResult = null
-
-      portalDialogService.openDialog.mockReturnValue(of(mockDialogResult) as never)
-
-      actions$.next(AiContextSearchActions.deleteAiContextButtonClicked({ id: 'test-123' }))
-
-      effects.deleteButtonClicked$.subscribe((action) => {
-        expect(action.type).toEqual(AiContextSearchActions.deleteAiContextCancelled.type)
-        expect(aiContextService.deleteAIContext).not.toHaveBeenCalled()
-        done()
+    ].forEach(({ desc, dialogResult }) => {
+      it(desc, (done) => {
+        portalDialogService.openDialog.mockReturnValue(of(dialogResult) as never)
+        actions$.next(AiContextSearchActions.deleteAiContextButtonClicked({ id: 'test-123' }))
+        effects.deleteButtonClicked$.subscribe((action) => {
+          expect(action.type).toEqual(AiContextSearchActions.deleteAiContextCancelled.type)
+          expect(aiContextService.deleteAIContext).not.toHaveBeenCalled()
+          done()
+        })
       })
     })
 
@@ -810,37 +811,27 @@ describe('AiContextSearchEffects', () => {
       })
 
       actions$.next(AiContextSearchActions.createAiContextButtonClicked())
-    })
+    });
 
-    it('should dispatch cancelled action when dialog is closed without result', (done) => {
-      const mockDialogResult = null
-
-      portalDialogService.openDialog.mockReturnValue(of(mockDialogResult) as never)
-
-      effects.createButtonClicked$.subscribe((action) => {
-        expect(aiContextService.createAIContext).not.toHaveBeenCalled()
-        expect(action).toEqual(AiContextSearchActions.createAiContextCancelled())
-        done()
-      })
-
-      actions$.next(AiContextSearchActions.createAiContextButtonClicked())
-    })
-
-    it('should dispatch cancelled action when dialog secondary button is clicked', (done) => {
-      const mockDialogResult = {
-        button: 'secondary',
-        result: { name: 'Test', description: 'Test' }
+    [
+      {
+        desc: 'should dispatch cancelled action when dialog is closed without result',
+        dialogResult: null
+      },
+      {
+        desc: 'should dispatch cancelled action when dialog secondary button is clicked',
+        dialogResult: { button: 'secondary', result: { name: 'Test', description: 'Test' } }
       }
-
-      portalDialogService.openDialog.mockReturnValue(of(mockDialogResult) as never)
-
-      effects.createButtonClicked$.subscribe((action) => {
-        expect(aiContextService.createAIContext).not.toHaveBeenCalled()
-        expect(action).toEqual(AiContextSearchActions.createAiContextCancelled())
-        done()
+    ].forEach(({ desc, dialogResult }) => {
+      it(desc, (done) => {
+        portalDialogService.openDialog.mockReturnValue(of(dialogResult) as never)
+        effects.createButtonClicked$.subscribe((action) => {
+          expect(action).toEqual(AiContextSearchActions.createAiContextCancelled())
+          expect(aiContextService.createAIContext).not.toHaveBeenCalled()
+          done()
+        })
+        actions$.next(AiContextSearchActions.createAiContextButtonClicked())
       })
-
-      actions$.next(AiContextSearchActions.createAiContextButtonClicked())
     })
 
     it('should handle error when dialog result is missing despite primary button', (done) => {
@@ -894,6 +885,56 @@ describe('AiContextSearchEffects', () => {
   })
 
   describe('exportData$', () => {
+   [
+    {
+      desc: 'should handle export with empty displayed columns',
+      viewModel: {
+        columns: [],
+        searchCriteria: {},
+        results: [
+          { id: '1', name: 'Context 1', description: 'Description 1', imagePath: '' }
+        ],
+        displayedColumns: [],
+        resultComponentState: { displayedColumns: undefined },
+        searchHeaderComponentState: null,
+        diagramComponentState: null,
+        chartVisible: false,
+        searchLoadingIndicator: false,
+        searchExecuted: true
+      }
+    },
+    {
+      desc: 'should handle export with null resultComponentState',
+      viewModel: {
+        columns: [],
+        searchCriteria: {},
+        results: [
+          { id: '1', name: 'Context 1', description: 'Description 1', imagePath: '' }
+        ],
+        displayedColumns: [],
+        resultComponentState: null,
+        searchHeaderComponentState: null,
+        diagramComponentState: null,
+        chartVisible: false,
+        searchLoadingIndicator: false,
+        searchExecuted: true
+      }
+    }
+  ].forEach(({ desc, viewModel }) => {
+      it(desc, (done) => {
+        store.overrideSelector(selectAiContextSearchViewModel, viewModel)
+        effects.exportData$.subscribe(() => {
+          expect(exportDataService.exportCsv).toHaveBeenCalledWith(
+            [],
+            viewModel.results,
+            'AIContext.csv'
+          )
+          done()
+        })
+        actions$.next(AiContextSearchActions.exportButtonClicked())
+      })
+    })
+
     it('should export CSV with correct parameters when export button is clicked', (done) => {
       const mockColumns = [
         { field: 'name', header: 'Name' },
@@ -915,54 +956,6 @@ describe('AiContextSearchEffects', () => {
       effects.exportData$.subscribe(() => {
         expect(exportDataService.exportCsv).toHaveBeenCalledWith(
           mockColumns,
-          mockResults,
-          'AIContext.csv'
-        )
-        done()
-      })
-
-      actions$.next(AiContextSearchActions.exportButtonClicked())
-    })
-
-    it('should handle export with empty displayed columns', (done) => {
-      const mockResults = [
-        { id: '1', name: 'Context 1', description: 'Description 1' }
-      ]
-      const mockViewModel = {
-        resultComponentState: {
-          displayedColumns: undefined
-        },
-        results: mockResults
-      } as unknown as AiContextSearchViewModel
-
-      store.overrideSelector(selectAiContextSearchViewModel, mockViewModel)
-
-      effects.exportData$.subscribe(() => {
-        expect(exportDataService.exportCsv).toHaveBeenCalledWith(
-          [],
-          mockResults,
-          'AIContext.csv'
-        )
-        done()
-      })
-
-      actions$.next(AiContextSearchActions.exportButtonClicked())
-    })
-
-    it('should handle export with null resultComponentState', (done) => {
-      const mockResults = [
-        { id: '1', name: 'Context 1', description: 'Description 1' }
-      ]
-      const mockViewModel = {
-        resultComponentState: null,
-        results: mockResults
-      } as unknown as AiContextSearchViewModel
-
-      store.overrideSelector(selectAiContextSearchViewModel, mockViewModel)
-
-      effects.exportData$.subscribe(() => {
-        expect(exportDataService.exportCsv).toHaveBeenCalledWith(
-          [],
           mockResults,
           'AIContext.csv'
         )
