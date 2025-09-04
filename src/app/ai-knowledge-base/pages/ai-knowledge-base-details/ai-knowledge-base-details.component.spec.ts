@@ -9,13 +9,13 @@ import { TranslateService } from '@ngx-translate/core'
 import { BreadcrumbService, PortalCoreModule, UserService } from '@onecx/portal-integration-angular'
 import { TranslateTestingModule } from 'ngx-translate-testing'
 import { PrimeIcons } from 'primeng/api'
-import { combineLatest, of } from 'rxjs'
+import { of } from 'rxjs'
 import { AiKnowledgeBaseDetailsComponent } from './ai-knowledge-base-details.component'
 import { AiKnowledgeBaseDetailsHarness } from './ai-knowledge-base-details.harness'
 import { initialState } from './ai-knowledge-base-details.reducers'
 import { selectAiKnowledgeBaseDetailsViewModel } from './ai-knowledge-base-details.selectors'
 import { AiKnowledgeBaseDetailsViewModel } from './ai-knowledge-base-details.viewmodel'
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms'
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'
 import { AIContext, AIKnowledgeBase } from 'src/app/shared/generated'
 
 describe('AiKnowledgeBaseDetailsComponent', () => {
@@ -219,40 +219,6 @@ describe('AiKnowledgeBaseDetailsComponent', () => {
       expect(await fourthDetailItem?.getIcon()).toEqual(PrimeIcons.QUESTION)
       })
       
-      it('should patch formGroup with details and matchedContexts in combineLatest subscription', (done) => {
-        const details = { id: '123', name: 'TestName', description: 'TestDesc', aiContext: [{ id: '1' }, { id: '2' }] }
-        const contexts: AIContext[] = [{ id: '1' }, { id: '2' }, { id: '3' }]
-        const viewModel$ = of({ details, contexts, editMode: false })
-        const displayContexts$ = of([{ id: '1' }, { id: '2' }, { id: '3' }])
-    
-        const formGroup = new FormGroup({
-          id: new FormControl<string | null>(''),
-          name: new FormControl<string | null>(''),
-          description: new FormControl<string | null>(''),
-          aiContext: new FormControl<AIContext[] | null>([])
-        })
-    
-        combineLatest([viewModel$, displayContexts$]).subscribe(([vm, displayContexts]) => {
-          if (!vm.editMode) {
-            const chosenContexts = vm.details?.aiContext ?? []
-            const matchedContexts = displayContexts.filter((context: AIContext) =>
-              chosenContexts.some((chosen: AIContext) => context.id === chosen.id)
-            )
-    
-            formGroup.patchValue({
-              id: vm.details?.id,
-              name: vm.details?.name,
-              description: vm.details?.description,
-              aiContext: matchedContexts
-            })
-            formGroup.markAsPristine()
-    
-            expect(formGroup.value.aiContext).toEqual([{ id: '1' }, { id: '2' }])
-            done()
-          }
-        })
-      })
-
       it('should use details.aiContext when it is an array in displayContexts$', (done) => {
       const details: AIKnowledgeBase = {
         id: 'kb1',
