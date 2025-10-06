@@ -1,0 +1,1344 @@
+openapi: 3.0.3
+info:
+  title: onecx-ai-management-bff
+  version: '1.0'
+  description: Updated on 05.06.2025 at 08:41
+paths:
+  /AIKnowledgeVectorDb/search:
+    post:
+      operationId: searchAIKnowledgeVectorDbs
+      tags:
+        - AIKnowledgeVectorDbBffService
+      description: This operation performs a search based on provided search criteria. Search for AIKnowledgeVectorDb results.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchAIKnowledgeVectorDbRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchAIKnowledgeVectorDbResponse'
+        '400':
+          description: Bad request
+        '500':
+          description: Something went wrong
+  /AIKnowledgeVectorDb/{id}:
+    get:
+      x-onecx:
+        permissions:
+          AIKnowledgeVectorDb:
+            - read
+      operationId: getAIKnowledgeVectorDbById
+      tags:
+        - AIKnowledgeVectorDbBffService
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAIKnowledgeVectorDbByIdResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+    put:
+      x-onecx:
+        permissions:
+          AIKnowledgeVectorDb:
+            - write
+      operationId: updateAIKnowledgeVectorDb
+      tags:
+        - AIKnowledgeVectorDbBffService
+      description: This operation performs an update.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAIKnowledgeVectorDbRequest'
+      responses:
+        '204':
+          description: AIKnowledgeVectorDb updated
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateAIKnowledgeVectorDbResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+        '404':
+          description: AIKnowledgeVectorDb not found
+    delete:
+      tags:
+        - AIKnowledgeVectorDbBffService
+      operationId: deleteAIKnowledgeVectorDb
+      description: Delete AIKnowledgeVectorDb by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: AIKnowledgeVectorDb deleted
+  /AIKnowledgeVectorDb:
+    post:
+      operationId: createAIKnowledgeVectorDb
+      tags:
+        - AIKnowledgeVectorDbBffService
+      description: This operation performs a create.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAIKnowledgeVectorDbRequest'
+      responses:
+        '201':
+          description: New AIKnowledgeVectorDb created
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAIKnowledgeVectorDbResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+  /aIKnowledgeDocument/search:
+    post:
+      operationId: searchAIKnowledgeDocuments
+      tags:
+        - AIKnowledgeDocumentBffService
+      description: This operation performs a search based on provided search criteria. Search for AIKnowledgeDocument results.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIKnowledgeDocumentSearchRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIKnowledgeDocumentSearchResponse'
+        '400':
+          description: Bad request
+        '500':
+          description: Something went wrong
+  /aIKnowledgeDocument/{id}:
+    get:
+      x-onecx:
+        permissions:
+          AIKnowledgeDocument:
+            - read
+      operationId: getAIKnowledgeDocumentById
+      tags:
+        - AIKnowledgeDocumentBffService
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAIKnowledgeDocumentByIdResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+    put:
+      operationId: updateAIKnowledgeDocument
+      tags:
+        - AIKnowledgeDocumentBffService
+      description: This operation performs an update.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAIKnowledgeDocument'
+      responses:
+        '204':
+          description: AIKnowledgeDocument updated
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIKnowledgeDocumentUpdateResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+        '404':
+          description: AIKnowledgeDocument not found
+    delete:
+      tags:
+        - AIKnowledgeDocumentBffService
+      operationId: deleteAIKnowledgeDocument
+      description: Delete AIKnowledgeDocument by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: AIKnowledgeDocument deleted
+  /aIKnowledgeDocument:
+    post:
+      operationId: createAIKnowledgeDocument
+      tags:
+        - AIKnowledgeDocumentBffService
+      description: This operation performs a create.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAIKnowledgeDocument'
+      responses:
+        '201':
+          description: New AIKnowledgeDocument created
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIKnowledgeDocumentCreateResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+  /aIProvider:
+    post:
+      operationId: createAIProvider
+      tags:
+        - AIProviderBffService
+      description: This operation performs a create.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAIProvider'
+      responses:
+        '201':
+          description: New AIProvider created
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIProviderCreateResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+  /aIProvider/search:
+    post:
+      operationId: searchAIProvider
+      tags:
+        - AIProviderBffService
+      description: This operation performs a search based on provided search criteria. Search for AIProvider results.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIProviderSearchRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIProviderSearchResponse'
+        '400':
+          description: Bad request
+        '500':
+          description: Something went wrong
+  /aIProvider/{id}:
+    get:
+      x-onecx:
+        permissions:
+          AIProvider:
+            - read
+      operationId: getAIProviderById
+      tags:
+        - AIProviderBffService
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAIProviderByIdResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+    put:
+      operationId: updateAIProvider
+      tags:
+        - AIProviderBffService
+      description: This operation performs an update.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAIProvider'
+      responses:
+        '204':
+          description: AIProvider updated
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIProviderUpdateResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+        '404':
+          description: AIProvider not found
+    delete:
+      tags:
+        - AIProviderBffService
+      operationId: deleteAIProvider
+      description: Delete AIProvider by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: AIProvider deleted
+
+  /AIKnowledgeBase/search:
+    post:
+      operationId: searchAIKnowledgeBases
+      tags:
+        - aiKnowledgeBaseBffService
+      description: This operation performs a search based on provided search criteria. Search for aiKnowledgeBase results.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchAIKnowledgeBaseRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchAIKnowledgeBaseResponse'
+        '400':
+          description: Bad request
+        '500':
+          description: Something went wrong
+  /AIKnowledgeBase/{id}:
+    get:
+      x-onecx:
+        permissions:
+          aiKnowledgeBase:
+            - read
+      operationId: getAIKnowledgeBaseById
+      tags:
+        - aiKnowledgeBaseBffService
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAIKnowledgeBaseByIdResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+    put:
+      operationId: updateAiKnowledgeBase
+      tags:
+        - aiKnowledgeBaseBffService
+      description: This operation performs an update.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAIKnowledgeBaseRequest'
+      responses:
+        '204':
+          description: aiKnowledgeBase updated
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateAIKnowledgeBaseResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+        '404':
+          description: aiKnowledgeBase not found
+    delete:
+      tags:
+        - aiKnowledgeBaseBffService
+      operationId: deleteAiKnowledgeBase
+      description: Delete aiKnowledgeBase by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: aiKnowledgeBase deleted
+  /aiKnowledgeBase:
+    post:
+      operationId: createAIKnowledgeBase
+      tags:
+        - aiKnowledgeBaseBffService
+      description: This operation performs a create.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAIKnowledgeBaseRequest'
+      responses:
+        '201':
+          description: New aiKnowledgeBase created
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAIKnowledgeBaseResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+  /aiContext/{id}:
+    get:
+      x-onecx:
+        permissions:
+          aiContext:
+            - read
+      operationId: getAIContextById
+      tags:
+        - AIContextBffService
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAIContextByIdResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+    put:
+      operationId: updateAIContext
+      tags:
+        - AIContextBffService
+      description: This operation performs an update.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAIContextRequest'
+      responses:
+        '204':
+          description: AIContext updated
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateAIContextResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+        '404':
+          description: AIContext not found
+    delete:
+      tags:
+        - AIContextBffService
+      operationId: deleteAIContext
+      description: Delete AIContext by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: AIContext deleted
+  /aiContext/search:
+    post:
+      operationId: searchAIContexts
+      tags:
+        - AIContextBffService
+      description: This operation performs a search based on provided search criteria. Search for aiContext results.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchAIContextRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchAIContextResponse'
+        '400':
+          description: Bad request
+        '500':
+          description: Something went wrong
+  /aiContext:
+    post:
+      operationId: createAIContext
+      tags:
+        - AIContextBffService
+      description: This operation performs a create.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAIContextRequest'
+      responses:
+        '201':
+          description: New AIContext created
+          headers:
+            Location:
+              required: true
+              schema:
+                type: string
+                format: url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateAIContextResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailResponse'
+components:
+  schemas:
+    AIKnowledgeVectorDb:
+      type: object
+      required:
+        - id
+      properties:
+        modificationCount:
+          type: integer
+          format: int32
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        vdb:
+          type: string
+        vdbCollection:
+          type: string
+        aiContext:
+          type: object
+          $ref: '#/components/schemas/AIContext'
+    SearchAIKnowledgeVectorDbRequest:
+      type: object
+      properties:
+        limit:
+          type: integer
+          maximum: 2500
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+        description:
+          type: string
+        vdb:
+          type: string
+        vdbCollection:
+          type: string
+    SearchAIKnowledgeVectorDbResponse:
+      type: object
+      required:
+        - results
+        - totalNumberOfResults
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIKnowledgeVectorDb'
+        totalNumberOfResults:
+          type: integer
+          format: int32
+          description: Total number of results on the server.
+    ProblemDetailResponse:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        detail:
+          type: string
+        params:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProblemDetailParam'
+        invalidParams:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProblemDetailInvalidParam'
+    ProblemDetailParam:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+    ProblemDetailInvalidParam:
+      type: object
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+    GetAIKnowledgeVectorDbByIdResponse:
+      type: object
+      required:
+        - result
+      properties:
+        result:
+          $ref: '#/components/schemas/AIKnowledgeVectorDb'
+    CreateAIKnowledgeVectorDbRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        appId:
+          type: string
+    UpdateAIKnowledgeVectorDbRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        appId:
+          type: string
+        aiContext:
+          type: object
+          $ref: '#/components/schemas/AIContext'
+    CreateAIKnowledgeVectorDbResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        vdb:
+          type: string
+        vdbCollection:
+          type: string
+        aiContext:
+          type: object
+          $ref: '#/components/schemas/AIContext'
+    UpdateAIKnowledgeVectorDbResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        vdb:
+          type: string
+        vdbCollection:
+          type: string
+        aiContext:
+          type: object
+          $ref: '#/components/schemas/AIContext'
+    AIKnowledgeDocument:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        modificationCount:
+          type: integer
+          format: int32
+        id:
+          type: string
+        name:
+          type: string
+        documentRefId:
+          type: string
+        status:
+          type: string
+          enum:
+            - NEW
+            - PROCESSING
+            - EMBEDDED
+    AIKnowledgeDocumentSearchRequest:
+      type: object
+      properties:
+        limit:
+          type: integer
+          maximum: 2500
+        id:
+          type: string
+        name:
+          type: string
+        documentRefId:
+          type: string
+        status:
+          enum:
+            - NEW
+            - PROCESSING
+            - EMBEDDED
+    AIKnowledgeDocumentSearchResponse:
+      type: object
+      required:
+        - results
+        - totalNumberOfResults
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIKnowledgeDocument'
+        totalNumberOfResults:
+          type: integer
+          format: int32
+          description: Total number of results on the server.
+    GetAIKnowledgeDocumentByIdResponse:
+      type: object
+      required:
+        - result
+      properties:
+        result:
+          $ref: '#/components/schemas/AIKnowledgeDocument'
+    CreateAIKnowledgeDocument:
+      type: object
+      required:
+        - aIKnowledgeDocumentData
+      properties:
+        aIKnowledgeDocumentData:
+          type: object
+          $ref: '#/components/schemas/AIKnowledgeDocument'
+    UpdateAIKnowledgeDocument:
+      type: object
+      required:
+        - aIKnowledgeDocumentData
+      properties:
+        aIKnowledgeDocumentData:
+          type: object
+          $ref: '#/components/schemas/AIKnowledgeDocument'
+    AIKnowledgeDocumentCreateResponse:
+      type: object
+      required:
+        - name
+        - documentRefId
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        documentRefId:
+          type: string
+        status:
+          type: string
+          enum:
+            - NEW
+            - PROCESSING
+            - EMBEDDED
+    AIKnowledgeDocumentUpdateResponse:
+      type: object
+      required:
+        - name
+        - documentRefId
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        documentRefId:
+          type: string
+        status:
+          type: string
+          enum:
+            - NEW
+            - PROCESSING
+            - EMBEDDED
+    AIProvider:
+      type: object
+      required:
+        - id
+      properties:
+        modificationCount:
+          type: integer
+          format: int32
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        llmUrl:
+          type: string
+        appId:
+          type: string
+        modelName:
+          type: string
+        modelVersion:
+          type: string
+        apiKey:
+          type: string
+    AIProviderSearchRequest:
+      type: object
+      properties:
+        limit:
+          type: integer
+          maximum: 2500
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+        description:
+          type: string
+        llmUrl:
+          type: string
+        appId:
+          type: string
+        modelName:
+          type: string
+        modelVersion:
+          type: string
+    AIProviderSearchResponse:
+      type: object
+      required:
+        - results
+        - totalNumberOfResults
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIProvider'
+        totalNumberOfResults:
+          type: integer
+          format: int32
+          description: Total number of results on the server.
+    GetAIProviderByIdResponse:
+      type: object
+      required:
+        - result
+      properties:
+        result:
+          $ref: '#/components/schemas/AIProvider'
+    CreateAIProvider:
+      type: object
+      properties:
+        dataObject:
+          type: object
+          $ref: '#/components/schemas/AIProvider'
+    UpdateAIProvider:
+      type: object
+      properties:
+        dataObject:
+          type: object
+          $ref: '#/components/schemas/AIProvider'
+    AIProviderCreateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        llmUrl:
+          type: string
+        appId:
+          type: string
+        modelName:
+          type: string
+        modelVersion:
+          type: string
+        apiKey:
+          type: string
+    AIProviderUpdateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        llmUrl:
+          type: string
+        appId:
+          type: string
+        modelName:
+          type: string
+        modelVersion:
+          type: string
+        apiKey:
+          type: string
+    AIKnowledgeBase:
+      type: object
+      properties:
+        modificationCount:
+          type: integer
+          format: int32
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        appId:
+          type: string
+        aiContext:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIContext'
+    CreateAIKnowledgeBaseRequest:
+      type: object
+      properties:
+        dataObject:
+          $ref: '#/components/schemas/AIKnowledgeBase'
+    CreateAIKnowledgeBaseResponse:
+      type: object
+      properties:
+        dataObject:
+          type: object
+          $ref: '#/components/schemas/AIKnowledgeBase'
+    SearchAIKnowledgeBaseRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        pageNumber:
+          type: integer
+          format: int32
+          default: 0
+          description: The number of the page
+        pageSize:
+          type: integer
+          format: int32
+          default: 100
+          maximum: 1000
+          description: The size of the page.
+        name:
+          type: string
+        description:
+          type: string
+    SearchAIKnowledgeBaseResponse:
+      type: object
+      required:
+        - stream
+        - size
+        - number
+        - totalPages
+        - totalElements
+      properties:
+        stream:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIKnowledgeBase'
+        size:
+          type: integer
+          format: int32
+          description: Current page size.
+        number:
+          type: integer
+          format: int32
+          description: Current page number.
+        totalElements:
+          type: integer
+          format: int64
+          description: Total number of results on the server.
+        totalPages:
+          type: integer
+          format: int64
+          description: Total pages.
+    UpdateAIKnowledgeBaseRequest:
+      type: object
+      properties:
+        dataObject:
+          type: object
+          $ref: '#/components/schemas/AIKnowledgeBase'
+    UpdateAIKnowledgeBaseResponse:
+      type: object
+      properties:
+        dataObject:
+          type: object
+          $ref: '#/components/schemas/AIKnowledgeBase'
+    GetAIKnowledgeBaseByIdResponse:
+      type: object
+      required:
+        - result
+      properties:
+        result:
+          $ref: '#/components/schemas/AIKnowledgeBase'
+    UpdateAIContextRequest:
+      type: object
+      properties:
+        dataObject:
+          type: object
+          $ref: '#/components/schemas/AIContext'
+    UpdateAIContextResponse:
+      type: object
+      properties:
+        dataObject:
+          type: object
+          $ref: '#/components/schemas/AIContext'
+    GetAIContextByIdResponse:
+      type: object
+      required:
+        - result
+      properties:
+        result:
+          $ref: '#/components/schemas/AIContext'
+    SearchAIContextRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        pageNumber:
+          type: integer
+          format: int32
+          default: 0
+          description: The number of the page
+        pageSize:
+          type: integer
+          format: int32
+          default: 100
+          maximum: 1000
+          description: The size of the page.
+        name:
+          type: string
+        description:
+          type: string
+        appId:
+          type: string
+    SearchAIContextResponse:
+      type: object
+      required:
+        - stream
+        - size
+        - number
+        - totalPages
+        - totalElements
+      properties:
+        stream:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIContext'
+        size:
+          type: integer
+          format: int32
+          description: Current page size.
+        number:
+          type: integer
+          format: int32
+          description: Current page number.
+        totalElements:
+          type: integer
+          format: int64
+          description: Total number of results on the server.
+        totalPages:
+          type: integer
+          format: int64
+          description: Total pages.
+    AIContext:
+      type: object
+      properties:
+        id:
+          type: string
+        appId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        modificationCount:
+          type: integer
+          format: int32
+        modificationUser:
+          type: string
+        creationUser:
+          type: string
+        provider:
+            $ref: '#/components/schemas/AIProvider'
+        AIKnowledgeBase:
+            $ref: '#/components/schemas/AIKnowledgeBase'
+        aIKnowledgeVectorDb:
+            $ref: '#/components/schemas/AIKnowledgeVectorDb'
+        aIKnowledgeUrl:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIKnowledgeUrl'
+        aIKnowledgeDbs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIKnowledgeDatabase'
+        aIKnowledgeDocuments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIKnowledgeDocument'
+    CreateAIContextRequest:
+      type: object
+      properties:
+        dataObject:
+          $ref: '#/components/schemas/AIContext'
+    CreateAIContextResponse:
+      type: object
+      properties:
+        dataObject:
+          type: object
+          $ref: '#/components/schemas/AIContext'
+    AIKnowledgeUrl:
+      type: object
+      properties:
+        modificationCount:
+          format: int32
+          type: integer
+        modificationUser:
+          type: string
+        creationUser:
+          type: string
+        id:
+          type: string
+        url:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+    AIKnowledgeDatabase:
+      required:
+        - db
+        - user
+        - pwd
+      type: object
+      properties:
+        modificationCount:
+          format: int32
+          type: integer
+        modificationUser:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        db:
+          type: string
+        user:
+          type: string
+        pwd:
+          type: string
+        tables:
+          type: array
+          items:
+            type: string
