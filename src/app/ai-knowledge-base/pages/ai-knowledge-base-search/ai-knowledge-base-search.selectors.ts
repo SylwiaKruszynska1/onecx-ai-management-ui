@@ -11,8 +11,9 @@ export const selectResults = createSelector(
   aiKnowledgeBaseSearchSelectors.selectResults,
   (results): RowListGridData[] => {
     return results.map((item) => ({
+      ...item,
       imagePath: '',
-      ...item
+      id: !item.id ? 'unknown' : item.id
     }))
   }
 )

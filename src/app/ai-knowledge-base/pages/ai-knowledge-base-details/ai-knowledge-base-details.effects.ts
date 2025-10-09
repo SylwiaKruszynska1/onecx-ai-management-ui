@@ -187,7 +187,7 @@ export class AiKnowledgeBaseDetailsEffects {
           throw new Error('Item to delete not found!')
         }
 
-        return this.aiKnowledgeBaseService.deleteAiKnowledgeBase(itemToDelete.id).pipe(
+        return this.aiKnowledgeBaseService.deleteAiKnowledgeBase(itemToDelete.id!).pipe(
           map(() => {
             this.messageService.success({
               summaryKey: 'AI_KNOWLEDGE_BASE_DETAILS.DELETE.SUCCESS'

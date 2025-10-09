@@ -1,4 +1,4 @@
-import { Injectable, SkipSelf } from '@angular/core'
+import { Injectable } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
 import { Actions, createEffect, ofType } from '@ngrx/effects'
 import { concatLatestFrom } from '@ngrx/operators'
@@ -34,7 +34,7 @@ import { AIKnowledgeBaseCreateUpdateComponent } from './dialogs/aiknowledge-base
 export class AiKnowledgeBaseSearchEffects {
   constructor(
     private actions$: Actions,
-    @SkipSelf() private route: ActivatedRoute,
+    private route: ActivatedRoute,
     private aiKnowledgeBaseService: AiKnowledgeBaseBffService,
     private router: Router,
     private store: Store,
@@ -120,7 +120,7 @@ export class AiKnowledgeBaseSearchEffects {
           throw new Error('Item to delete not found!')
         }
 
-        return this.aiKnowledgeBaseService.deleteAiKnowledgeBase(itemToDelete.id).pipe(
+        return this.aiKnowledgeBaseService.deleteAiKnowledgeBase(itemToDelete.id!).pipe(
           map(() => {
             this.messageService.success({
               summaryKey: 'AI_KNOWLEDGE_BASE_DETAILS.DELETE.SUCCESS'
@@ -231,7 +231,7 @@ export class AiKnowledgeBaseSearchEffects {
         const itemToEdit = {
           aIKnowledgeDocumentData: dialogResult.result
         } as UpdateAIKnowledgeBaseRequest
-        return this.aiKnowledgeBaseService.updateAiKnowledgeBase(itemToEditId, itemToEdit).pipe(
+        return this.aiKnowledgeBaseService.updateAiKnowledgeBase(itemToEditId!, itemToEdit).pipe(
           map(() => {
             this.messageService.success({
               summaryKey: 'AI_KNOWLEDGE_BASE_CREATE_UPDATE.UPDATE.SUCCESS'

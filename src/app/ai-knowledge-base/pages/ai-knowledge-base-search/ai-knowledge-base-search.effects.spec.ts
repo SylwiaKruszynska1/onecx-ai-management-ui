@@ -3,9 +3,9 @@ import { AiKnowledgeBaseSearchComponent } from './ai-knowledge-base-search.compo
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms'
 import { ComponentFixture, TestBed } from '@angular/core/testing'
-import { ColumnType, DiagramComponentState, InteractiveDataViewComponentState, PortalCoreModule, UserService } from '@onecx/portal-integration-angular'
-import { ofType } from '@ngrx/effects'
-import { Store, StoreModule } from '@ngrx/store'
+import { ColumnType, DiagramComponentState, DialogState, InteractiveDataViewComponentState, PortalCoreModule, PortalDialogService, UserService } from '@onecx/portal-integration-angular'
+import { ofType, Actions } from '@ngrx/effects'
+import { ScannedActionsSubject, Store, StoreModule } from '@ngrx/store'
 import { AiKnowledgeBaseSearchHarness } from './ai-knowledge-base-search.harness'
 import { AiKnowledgeBaseSearchViewModel } from './ai-knowledge-base-search.viewmodel'
 import { aiKnowledgeBaseSearchColumns } from './ai-knowledge-base-search.columns'
@@ -19,6 +19,10 @@ import { ActivatedRoute } from '@angular/router'
 import { TranslateService } from '@ngx-translate/core'
 import { selectAiKnowledgeBaseSearchViewModel } from './ai-knowledge-base-search.selectors'
 import { TestbedHarnessEnvironment } from '@onecx/angular-accelerator/testing'
+import { AIKnowledgeBase, AiKnowledgeBaseBffService, UpdateAIKnowledgeBaseResponse } from 'src/app/shared/generated'
+import { ReplaySubject, of } from 'rxjs'
+import { AiKnowledgeBaseSearchEffects } from './ai-knowledge-base-search.effects'
+import { HttpResponse } from '@angular/common/http'
 
 describe('AiKnowledgeBaseSearchComponent effects', () => {
   let component: AiKnowledgeBaseSearchComponent
@@ -26,11 +30,15 @@ describe('AiKnowledgeBaseSearchComponent effects', () => {
   let store: MockStore<Store>
   let formBuilder: FormBuilder
   let aiKnowledgeBaseSearch: AiKnowledgeBaseSearchHarness
+  const actions$ = new ReplaySubject<any>(1)
 
   const mockActivatedRoute = {
     snapshot: {
       data: {}
     }
+  }
+  const portalDialogServiceMock = {
+    openDialog: jest.fn(() => of({ button: 'primary', result: true }))
   }
   const baseAiKnowledgeBaseSearchViewModel: AiKnowledgeBaseSearchViewModel = {
     columns: aiKnowledgeBaseSearchColumns,
@@ -65,7 +73,11 @@ describe('AiKnowledgeBaseSearchComponent effects', () => {
           initialState: { aiKnowledgeBase: { search: initialState } }
         }),
         FormBuilder,
-        { provide: ActivatedRoute, useValue: mockActivatedRoute }
+        { provide: ActivatedRoute, useValue: mockActivatedRoute },
+        AiKnowledgeBaseSearchEffects,
+        { provide: ScannedActionsSubject, useValue: new ReplaySubject<any>(1) },
+        { provide: PortalDialogService, useValue: portalDialogServiceMock },
+        { provide: Actions, useValue: actions$ }
       ]
     }).compileComponents()
     const userService = TestBed.inject(UserService)
@@ -187,6 +199,53 @@ describe('AiKnowledgeBaseSearchComponent effects', () => {
     const showChartActionItem = await pageHeader.getOverFlowMenuItem('Show chart')
     await showChartActionItem!.selectItem()
     expect(store.dispatch).toHaveBeenCalledWith(AiKnowledgeBaseSearchActions.chartVisibilityToggled())
+  })
+  it('should call updateAiKnowledgeBase in effect when editButtonClicked is dispatched', (done) => {
+    const aiKnowledgeBaseService = TestBed.inject(AiKnowledgeBaseBffService)
+    const mockResponse: UpdateAIKnowledgeBaseResponse = {}
+    const spy = jest.spyOn(aiKnowledgeBaseService, 'updateAiKnowledgeBase').mockReturnValue(
+      of(new HttpResponse<UpdateAIKnowledgeBaseResponse>({ status: 200, body: mockResponse }))
+    )
+    const effects = TestBed.inject(AiKnowledgeBaseSearchEffects)
+    
+    const itemToEdit = { id: '123', name: 'test' }
+    
+    jest.spyOn(effects['store'], 'select').mockReturnValue(of([itemToEdit]))
+
+    jest.spyOn(effects['portalDialogService'], 'openDialog').mockReturnValue(
+      of({ 
+        button: 'primary', 
+        result: { id: '123', name: 'test' }
+      } as DialogState<AIKnowledgeBase>)
+    )
+
+    effects.editButtonClicked$.subscribe(() => {
+      expect(spy).toHaveBeenCalledWith('123', { 
+        aIKnowledgeDocumentData: { id: '123', name: 'test' }
+      })
+      done()
+    })
+
+    actions$.next(AiKnowledgeBaseSearchActions.editButtonClicked({ id: '123' }))
+  })
+
+  it('should call deleteAiKnowledgeBase in effect when deleteButtonClicked is dispatched', (done) => {
+    const aiKnowledgeBaseService = TestBed.inject(AiKnowledgeBaseBffService)
+    const spy = jest.spyOn(aiKnowledgeBaseService, 'deleteAiKnowledgeBase').mockReturnValue(of(new HttpResponse({ status: 200 })))
+    const effects = TestBed.inject(AiKnowledgeBaseSearchEffects)
+    const itemToDelete = { id: '789', name: 'test' }
+
+    jest.spyOn(effects['store'], 'select').mockReturnValue(of([itemToDelete]))
+    jest.spyOn(effects['portalDialogService'], 'openDialog').mockReturnValue(
+      of({ button: 'primary', result: true } as DialogState<unknown>)
+    )
+
+    effects.deleteButtonClicked$.subscribe(() => {
+      expect(spy).toHaveBeenCalledWith('789')
+      done()
+    })
+
+    actions$.next(AiKnowledgeBaseSearchActions.deleteButtonClicked({ id: '789' }))
   })
   describe('dispatch actions', () => {
     const actions = [

@@ -3,10 +3,10 @@ import { HttpClientTestingModule } from '@angular/common/http/testing'
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { ActivatedRoute } from '@angular/router'
 import { LetDirective } from '@ngrx/component'
-import { Store } from '@ngrx/store'
+import { Store, ScannedActionsSubject } from '@ngrx/store'
 import { MockStore, provideMockStore } from '@ngrx/store/testing'
 import { TranslateService } from '@ngx-translate/core'
-import { PortalCoreModule, UserService } from '@onecx/portal-integration-angular'
+import { PortalCoreModule, UserService, PortalDialogService } from '@onecx/portal-integration-angular'
 import { TranslateTestingModule } from 'ngx-translate-testing'
 import { AiKnowledgeBaseDetailsComponent } from './ai-knowledge-base-details.component'
 import { AiKnowledgeBaseDetailsHarness } from './ai-knowledge-base-details.harness'
@@ -14,20 +14,26 @@ import { initialState } from './ai-knowledge-base-details.reducers'
 import { selectAiKnowledgeBaseDetailsViewModel } from './ai-knowledge-base-details.selectors'
 import { AiKnowledgeBaseDetailsViewModel } from './ai-knowledge-base-details.viewmodel'
 import { FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { ofType } from '@ngrx/effects'
+import { ofType, Actions } from '@ngrx/effects'
 import { AiKnowledgeBaseDetailsActions } from './ai-knowledge-base-details.actions'
-import { firstValueFrom } from 'rxjs'
+import { AiKnowledgeBaseBffService } from 'src/app/shared/generated/api/aiKnowledgeBaseBffService.service'
+import { AiKnowledgeBaseDetailsEffects } from './ai-knowledge-base-details.effects'
+import { ReplaySubject, of } from 'rxjs'
+import { HttpResponse } from '@angular/common/http'
 
 describe('Actions', () => {
-  let component: AiKnowledgeBaseDetailsComponent
   let fixture: ComponentFixture<AiKnowledgeBaseDetailsComponent>
   let store: MockStore<Store>
   let aiKnowledgeBaseDetails: AiKnowledgeBaseDetailsHarness
+  const actions$ = new ReplaySubject<any>(1)
 
   const mockActivatedRoute = {
     snapshot: {
       data: {}
     }
+  }
+  const portalDialogServiceMock = {
+    openDialog: jest.fn(() => of(true))
   }
   const baseAiKnowledgeBaseDetailsViewModel: AiKnowledgeBaseDetailsViewModel = {
     details: undefined,
@@ -59,7 +65,11 @@ describe('Actions', () => {
             provideMockStore({
             initialState: { aiKnowledgeBase: { details: initialState } }
             }),
-            { provide: ActivatedRoute, useValue: mockActivatedRoute }
+            { provide: ActivatedRoute, useValue: mockActivatedRoute },
+            AiKnowledgeBaseDetailsEffects,
+            { provide: ScannedActionsSubject, useValue: new ReplaySubject<any>(1) },
+            { provide: PortalDialogService, useValue: portalDialogServiceMock },
+            { provide: Actions, useValue: actions$ }
         ]
         }).compileComponents()
 
@@ -74,7 +84,6 @@ describe('Actions', () => {
         store.refreshState()
 
         fixture = TestBed.createComponent(AiKnowledgeBaseDetailsComponent)
-        component = fixture.componentInstance
         fixture.detectChanges()
         aiKnowledgeBaseDetails = await TestbedHarnessEnvironment.harnessForFixture(fixture, AiKnowledgeBaseDetailsHarness)
     })
@@ -138,18 +147,19 @@ describe('Actions', () => {
       expect(doneFn).toHaveBeenCalledTimes(1)
     })
 
-    it('should call delete() and dispatch deleteButtonClicked when DELETE actionCallback is triggered', async () => {
-      const actions = await firstValueFrom(component.headerActions$)
-      const deleteAction = actions.find(a => a.labelKey === 'AI_KNOWLEDGE_BASE_DETAILS.GENERAL.DELETE')
-      expect(deleteAction).toBeTruthy()
+  it('should call deleteAiKnowledgeBase in effect when deleteButtonClicked is dispatched', (done) => {
+    const aiKnowledgeBaseService = TestBed.inject(AiKnowledgeBaseBffService)
+    const spy = jest.spyOn(aiKnowledgeBaseService, 'deleteAiKnowledgeBase').mockReturnValue(of(new HttpResponse({ status: 200 })))
+    const effects = TestBed.inject(AiKnowledgeBaseDetailsEffects)
+    const itemToDelete = { id: '123', name: 'test' }
 
-      const deleteSpy = jest.spyOn(component, 'delete')
-      if (deleteAction) {
-        deleteAction.actionCallback()
-        expect(deleteSpy).toHaveBeenCalled()
-        expect(store.dispatch).toHaveBeenCalledWith(
-          AiKnowledgeBaseDetailsActions.deleteButtonClicked()
-        )
-      }
+    jest.spyOn(effects['store'], 'select').mockReturnValue(of(itemToDelete))
+
+    effects.deleteButtonClicked$.subscribe(() => {
+      expect(spy).toHaveBeenCalledWith('123')
+      done()
     })
+
+    actions$.next(AiKnowledgeBaseDetailsActions.deleteButtonClicked())
   })
+})
