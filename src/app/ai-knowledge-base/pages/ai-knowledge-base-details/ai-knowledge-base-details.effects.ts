@@ -183,7 +183,7 @@ export class AiKnowledgeBaseDetailsEffects {
         if (!dialogResult || dialogResult.button == 'secondary') {
           return of(AiKnowledgeBaseDetailsActions.deleteAiKnowledgeBaseCancelled())
         }
-        if (!itemToDelete || !itemToDelete.id) {
+        if (!itemToDelete?.id) {
           throw new Error('Item to delete not found!')
         }
 

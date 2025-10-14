@@ -116,7 +116,7 @@ export class AiKnowledgeBaseSearchEffects {
         if (!dialogResult || dialogResult.button == 'secondary') {
           return of(AiKnowledgeBaseSearchActions.deleteAiKnowledgeBaseCancelled())
         }
-        if (!itemToDelete || !itemToDelete.id) {
+        if (!itemToDelete?.id) {
           throw new Error('Item to delete not found!')
         }
 

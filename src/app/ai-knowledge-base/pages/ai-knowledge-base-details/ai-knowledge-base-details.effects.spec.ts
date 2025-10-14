@@ -166,11 +166,49 @@ describe('Actions', () => {
     actions$.next(AiKnowledgeBaseDetailsActions.deleteButtonClicked())
   })
 
-  it('should throw error when item to delete is not found or has no ID', (done) => {
+  it('should throw error when item to delete is null/undefined', (done) => {
     const effects = TestBed.inject(AiKnowledgeBaseDetailsEffects)
     
-    // Mock item without ID
+    // Mock null item - tests the first part of optional chaining
+    jest.spyOn(effects['store'], 'select').mockReturnValue(of(null))
+    jest.spyOn(effects['portalDialogService'], 'openDialog').mockReturnValue(
+      of({ button: 'primary', result: true })
+    )
+
+    effects.deleteButtonClicked$.subscribe({
+      error: (error) => {
+        expect(error.message).toBe('Item to delete not found!')
+        done()
+      }
+    })
+
+    actions$.next(AiKnowledgeBaseDetailsActions.deleteButtonClicked())
+  })
+
+  it('should throw error when item exists but has no ID', (done) => {
+    const effects = TestBed.inject(AiKnowledgeBaseDetailsEffects)
+    
+    // Mock item without ID - tests the second part of optional chaining
     jest.spyOn(effects['store'], 'select').mockReturnValue(of({ name: 'test' }))
+    jest.spyOn(effects['portalDialogService'], 'openDialog').mockReturnValue(
+      of({ button: 'primary', result: true })
+    )
+
+    effects.deleteButtonClicked$.subscribe({
+      error: (error) => {
+        expect(error.message).toBe('Item to delete not found!')
+        done()
+      }
+    })
+
+    actions$.next(AiKnowledgeBaseDetailsActions.deleteButtonClicked())
+  })
+
+  it('should throw error when item exists but has falsy ID', (done) => {
+    const effects = TestBed.inject(AiKnowledgeBaseDetailsEffects)
+    
+    // Mock item with falsy ID - tests another case of optional chaining
+    jest.spyOn(effects['store'], 'select').mockReturnValue(of({ name: 'test', id: '' }))
     jest.spyOn(effects['portalDialogService'], 'openDialog').mockReturnValue(
       of({ button: 'primary', result: true })
     )

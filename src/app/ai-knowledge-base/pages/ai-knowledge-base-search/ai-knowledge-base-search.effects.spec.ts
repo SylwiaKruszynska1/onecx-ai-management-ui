@@ -272,7 +272,7 @@ describe('AiKnowledgeBaseSearchComponent effects', () => {
     actions$.next(AiKnowledgeBaseSearchActions.deleteButtonClicked({ id: '789' }))
   })
 
-  it('should dispatch deleteAiKnowledgeBaseFailed when item to delete is not found (null)', (done) => {
+  it('should dispatch deleteAiKnowledgeBaseFailed when item to delete is not found (itemToDelete is undefined)', (done) => {
     const effects = TestBed.inject(AiKnowledgeBaseSearchEffects)
     
     jest.spyOn(effects['store'], 'select').mockReturnValue(of([]))
@@ -280,8 +280,6 @@ describe('AiKnowledgeBaseSearchComponent effects', () => {
       of({ button: 'primary', result: true } as DialogState<unknown>)
     )
 
-    // The error is thrown but should be caught by catchError in the effect
-    // and converted to a deleteAiKnowledgeBaseFailed action
     effects.deleteButtonClicked$.subscribe({
       next: (action) => {
         if (action.type === AiKnowledgeBaseSearchActions.deleteAiKnowledgeBaseFailed.type) {
@@ -297,10 +295,10 @@ describe('AiKnowledgeBaseSearchComponent effects', () => {
     actions$.next(AiKnowledgeBaseSearchActions.deleteButtonClicked({ id: 'nonexistent' }))
   })
 
-  it('should dispatch deleteAiKnowledgeBaseFailed when item to delete has no ID', (done) => {
+  it('should dispatch deleteAiKnowledgeBaseFailed when item exists but has no id property', (done) => {
     const effects = TestBed.inject(AiKnowledgeBaseSearchEffects)
      
-    const itemWithoutId = { name: 'test', id: null } as any
+    const itemWithoutId = { name: 'test' } as any
     jest.spyOn(effects['store'], 'select').mockReturnValue(of([itemWithoutId]))
     
     jest.spyOn(effects['portalDialogService'], 'openDialog').mockReturnValue(
@@ -319,7 +317,33 @@ describe('AiKnowledgeBaseSearchComponent effects', () => {
       }
     })
 
-    actions$.next(AiKnowledgeBaseSearchActions.deleteButtonClicked({ id: 'test-id' }))
+    actions$.next(AiKnowledgeBaseSearchActions.deleteButtonClicked({ id: 'some-id' }))
+  })
+
+  it('should dispatch deleteAiKnowledgeBaseFailed when item exists but has falsy ID', (done) => {
+    const effects = TestBed.inject(AiKnowledgeBaseSearchEffects)
+     
+    // Item with falsy ID, tests second part of optional chaining (!itemToDelete?.id)
+    const itemWithFalsyId = { name: 'test', id: '' } as any
+    jest.spyOn(effects['store'], 'select').mockReturnValue(of([itemWithFalsyId]))
+    
+    jest.spyOn(effects['portalDialogService'], 'openDialog').mockReturnValue(
+      of({ button: 'primary', result: true } as DialogState<unknown>)
+    )
+
+    effects.deleteButtonClicked$.subscribe({
+      next: (action) => {
+        if (action.type === AiKnowledgeBaseSearchActions.deleteAiKnowledgeBaseFailed.type) {
+          expect((action as any).error.message).toBe('Item to delete not found!')
+          done()
+        }
+      },
+      error: (error) => {
+        fail('Error should be caught by effect and converted to action: ' + error.message)
+      }
+    })
+
+    actions$.next(AiKnowledgeBaseSearchActions.deleteButtonClicked({ id: '' }))
   })
 
   describe('dispatch actions', () => {
