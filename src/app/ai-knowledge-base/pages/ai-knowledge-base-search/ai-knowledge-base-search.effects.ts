@@ -138,6 +138,16 @@ export class AiKnowledgeBaseSearchEffects {
             )
           })
         )
+      }),
+      catchError((error) => {
+        this.messageService.error({
+          summaryKey: 'AI_KNOWLEDGE_BASE_DETAILS.DELETE.ERROR'
+        })
+        return of(
+          AiKnowledgeBaseSearchActions.deleteAiKnowledgeBaseFailed({
+            error
+          })
+        )
       })
     )
   })

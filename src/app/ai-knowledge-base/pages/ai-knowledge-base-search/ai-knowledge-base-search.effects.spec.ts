@@ -271,6 +271,57 @@ describe('AiKnowledgeBaseSearchComponent effects', () => {
 
     actions$.next(AiKnowledgeBaseSearchActions.deleteButtonClicked({ id: '789' }))
   })
+
+  it('should dispatch deleteAiKnowledgeBaseFailed when item to delete is not found (null)', (done) => {
+    const effects = TestBed.inject(AiKnowledgeBaseSearchEffects)
+    
+    jest.spyOn(effects['store'], 'select').mockReturnValue(of([]))
+    jest.spyOn(effects['portalDialogService'], 'openDialog').mockReturnValue(
+      of({ button: 'primary', result: true } as DialogState<unknown>)
+    )
+
+    // The error is thrown but should be caught by catchError in the effect
+    // and converted to a deleteAiKnowledgeBaseFailed action
+    effects.deleteButtonClicked$.subscribe({
+      next: (action) => {
+        if (action.type === AiKnowledgeBaseSearchActions.deleteAiKnowledgeBaseFailed.type) {
+          expect((action as any).error.message).toBe('Item to delete not found!')
+          done()
+        }
+      },
+      error: (error) => {
+        fail('Error should be caught by effect and converted to action: ' + error.message)
+      }
+    })
+
+    actions$.next(AiKnowledgeBaseSearchActions.deleteButtonClicked({ id: 'nonexistent' }))
+  })
+
+  it('should dispatch deleteAiKnowledgeBaseFailed when item to delete has no ID', (done) => {
+    const effects = TestBed.inject(AiKnowledgeBaseSearchEffects)
+     
+    const itemWithoutId = { name: 'test', id: null } as any
+    jest.spyOn(effects['store'], 'select').mockReturnValue(of([itemWithoutId]))
+    
+    jest.spyOn(effects['portalDialogService'], 'openDialog').mockReturnValue(
+      of({ button: 'primary', result: true } as DialogState<unknown>)
+    )
+
+    effects.deleteButtonClicked$.subscribe({
+      next: (action) => {
+        if (action.type === AiKnowledgeBaseSearchActions.deleteAiKnowledgeBaseFailed.type) {
+          expect((action as any).error.message).toBe('Item to delete not found!')
+          done()
+        }
+      },
+      error: (error) => {
+        fail('Error should be caught by effect and converted to action: ' + error.message)
+      }
+    })
+
+    actions$.next(AiKnowledgeBaseSearchActions.deleteButtonClicked({ id: 'test-id' }))
+  })
+
   describe('dispatch actions', () => {
     const actions = [
       { method: 'resultComponentStateChanged', action: AiKnowledgeBaseSearchActions.resultComponentStateChanged, payload: { layout: 'grid' } as InteractiveDataViewComponentState },
