@@ -183,11 +183,11 @@ export class AiKnowledgeBaseDetailsEffects {
         if (!dialogResult || dialogResult.button == 'secondary') {
           return of(AiKnowledgeBaseDetailsActions.deleteAiKnowledgeBaseCancelled())
         }
-        if (!itemToDelete) {
+        if (!itemToDelete || !itemToDelete.id) {
           throw new Error('Item to delete not found!')
         }
 
-        return this.aiKnowledgeBaseService.deleteAiKnowledgeBase(itemToDelete.id!).pipe(
+        return this.aiKnowledgeBaseService.deleteAiKnowledgeBase(itemToDelete.id).pipe(
           map(() => {
             this.messageService.success({
               summaryKey: 'AI_KNOWLEDGE_BASE_DETAILS.DELETE.SUCCESS'
@@ -256,7 +256,7 @@ export class AiKnowledgeBaseDetailsEffects {
         if (!backNavigationPossible) {
           return of(AiKnowledgeBaseDetailsActions.backNavigationFailed())
         }
-        window.history.back()
+        globalThis.history.back()
         return of(AiKnowledgeBaseDetailsActions.backNavigationStarted())
       })
     )

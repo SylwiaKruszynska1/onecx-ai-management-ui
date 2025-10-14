@@ -20,6 +20,7 @@ import { AiKnowledgeBaseBffService } from 'src/app/shared/generated/api/aiKnowle
 import { AiKnowledgeBaseDetailsEffects } from './ai-knowledge-base-details.effects'
 import { ReplaySubject, of } from 'rxjs'
 import { HttpResponse } from '@angular/common/http'
+import { selectBackNavigationPossible } from 'src/app/shared/selectors/onecx.selectors'
 
 describe('Actions', () => {
   let fixture: ComponentFixture<AiKnowledgeBaseDetailsComponent>
@@ -63,7 +64,10 @@ describe('Actions', () => {
         ],
         providers: [
             provideMockStore({
-            initialState: { aiKnowledgeBase: { details: initialState } }
+            initialState: { 
+              aiKnowledgeBase: { details: initialState },
+              onecx: { backNavigationPossible: true }
+            }
             }),
             { provide: ActivatedRoute, useValue: mockActivatedRoute },
             AiKnowledgeBaseDetailsEffects,
@@ -161,5 +165,62 @@ describe('Actions', () => {
     })
 
     actions$.next(AiKnowledgeBaseDetailsActions.deleteButtonClicked())
+  })
+
+  it('should throw error when item to delete is not found or has no ID', (done) => {
+    const effects = TestBed.inject(AiKnowledgeBaseDetailsEffects)
+    
+    // Mock item without ID
+    jest.spyOn(effects['store'], 'select').mockReturnValue(of({ name: 'test' }))
+    jest.spyOn(effects['portalDialogService'], 'openDialog').mockReturnValue(
+      of({ button: 'primary', result: true })
+    )
+
+    effects.deleteButtonClicked$.subscribe({
+      error: (error) => {
+        expect(error.message).toBe('Item to delete not found!')
+        done()
+      }
+    })
+
+    actions$.next(AiKnowledgeBaseDetailsActions.deleteButtonClicked())
+  })
+
+  describe('navigateBack$ effect', () => {
+    let effects: AiKnowledgeBaseDetailsEffects
+    let historySpy: jest.SpyInstance
+
+    beforeEach(() => {
+      effects = TestBed.inject(AiKnowledgeBaseDetailsEffects)
+      historySpy = jest.spyOn(globalThis.history, 'back').mockImplementation(() => {})
+    })
+
+    afterEach(() => {
+      historySpy.mockRestore()
+    })
+
+    it('should call globalThis.history.back() when back navigation is possible', (done) => {
+      jest.spyOn(effects['store'], 'select').mockReturnValue(of(true))
+
+      effects.navigateBack$.subscribe((action) => {
+        expect(historySpy).toHaveBeenCalled()
+        expect(action.type).toBe(AiKnowledgeBaseDetailsActions.backNavigationStarted.type)
+        done()
+      })
+
+      actions$.next(AiKnowledgeBaseDetailsActions.navigateBackButtonClicked())
+    })
+
+    it('should not call globalThis.history.back() when back navigation is not possible', (done) => {
+      jest.spyOn(effects['store'], 'select').mockReturnValue(of(false))
+
+      effects.navigateBack$.subscribe((action) => {
+        expect(historySpy).not.toHaveBeenCalled()
+        expect(action.type).toBe(AiKnowledgeBaseDetailsActions.backNavigationFailed.type)
+        done()
+      })
+
+      actions$.next(AiKnowledgeBaseDetailsActions.navigateBackButtonClicked())
+    })
   })
 })

@@ -229,6 +229,30 @@ describe('AiKnowledgeBaseSearchComponent effects', () => {
     actions$.next(AiKnowledgeBaseSearchActions.editButtonClicked({ id: '123' }))
   })
 
+  it('should dispatch editAIKnowledgeBaseFailed when item ID is missing in edit effect', (done) => {
+    const effects = TestBed.inject(AiKnowledgeBaseSearchEffects)
+    
+    const itemToEdit = { id: '123', name: 'test' }
+    
+    jest.spyOn(effects['store'], 'select').mockReturnValue(of([itemToEdit]))
+
+    jest.spyOn(effects['portalDialogService'], 'openDialog').mockReturnValue(
+      of({ 
+        button: 'primary', 
+        result: { name: 'test' }
+      } as DialogState<AIKnowledgeBase>)
+    )
+
+    effects.editButtonClicked$.subscribe((action) => {
+      if (action.type === AiKnowledgeBaseSearchActions.editAIKnowledgeBaseFailed.type) {
+        expect((action as any).error.message).toBe('Item ID is required for update!')
+        done()
+      }
+    })
+
+    actions$.next(AiKnowledgeBaseSearchActions.editButtonClicked({ id: '123' }))
+  })
+
   it('should call deleteAiKnowledgeBase in effect when deleteButtonClicked is dispatched', (done) => {
     const aiKnowledgeBaseService = TestBed.inject(AiKnowledgeBaseBffService)
     const spy = jest.spyOn(aiKnowledgeBaseService, 'deleteAiKnowledgeBase').mockReturnValue(of(new HttpResponse({ status: 200 })))
