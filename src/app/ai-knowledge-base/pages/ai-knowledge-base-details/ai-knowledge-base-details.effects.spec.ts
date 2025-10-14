@@ -20,7 +20,6 @@ import { AiKnowledgeBaseBffService } from 'src/app/shared/generated/api/aiKnowle
 import { AiKnowledgeBaseDetailsEffects } from './ai-knowledge-base-details.effects'
 import { ReplaySubject, of } from 'rxjs'
 import { HttpResponse } from '@angular/common/http'
-import { selectBackNavigationPossible } from 'src/app/shared/selectors/onecx.selectors'
 
 describe('Actions', () => {
   let fixture: ComponentFixture<AiKnowledgeBaseDetailsComponent>
